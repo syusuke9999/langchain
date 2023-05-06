@@ -1,4 +1,4 @@
-name: linkcheck
+name: lint
 
 on:
   push:
@@ -14,6 +14,9 @@ jobs:
     strategy:
       matrix:
         python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
           - "3.11"
     steps:
       - uses: actions/checkout@v3
@@ -27,10 +30,7 @@ jobs:
           cache: poetry
       - name: Install dependencies
         run: |
-          poetry install --with docs
-      - name: Build the docs
+          poetry install
+      - name: Analysing the code with our lint
         run: |
-          make docs_build
-      - name: Analyzing the docs with linkcheck
-        run: |
-          make docs_linkcheck
+          make lint

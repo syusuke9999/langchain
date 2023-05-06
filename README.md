@@ -4,6 +4,7 @@
 
 [![lint](https://github.com/hwchase17/langchain/actions/workflows/lint.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/lint.yml) [![test](https://github.com/hwchase17/langchain/actions/workflows/test.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/test.yml) [![linkcheck](https://github.com/hwchase17/langchain/actions/workflows/linkcheck.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/linkcheck.yml) [![Downloads](https://static.pepy.tech/badge/langchain/month)](https://pepy.tech/project/langchain) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchainai.svg?style=social&label=Follow%20%40LangChainAI)](https://twitter.com/langchainai) [![](https://dcbadge.vercel.app/api/server/6adMQxSpJS?compact=true&style=flat)](https://discord.gg/6adMQxSpJS) [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/hwchase17/langchain) [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/hwchase17/langchain)
 
+
 JS/TSバージョンをお探しですか？ [LangChain.js](https://github.com/hwchase17/langchainjs)をチェックしてください。
 
 **本番環境サポート:** LangChainsを本番環境に移行する際に、より包括的なサポートを提供したいと考えています。
@@ -17,11 +18,11 @@ JS/TSバージョンをお探しですか？ [LangChain.js](https://github.com/h
 
 ## 🤔 これは何？
 
-大規模言語モデル（LLM）は、開発者がこれまで構築できなかったアプリケーションを構築できるようになる画期的な技術として登場しています。しかし、これらのLLMを単独で使用するだけでは、本当に強力なアプリを作成するには不十分であり、他の計算や知識のソースと組み合わせることができるときに真の力が発揮されます。
+大規模言語モデル（LLMs）は、開発者がこれまでできなかったアプリケーションを構築できるようにする、革新的なテクノロジーとして注目されています。 しかし、これらのLLMsを単独で使っても真にパワフルなアプリケーションを作るには不十分な場合が多く、LLMsを他の計算ソースや知識と組み合わせることで真のパワーを発揮することができます。
 
-このライブラリは、そのようなアプリケーションの開発を支援することを目的としています。これらのアプリケーションの一般的な例は以下の通りです。
+このライブラリーはそのようなアプリケーションの開発を支援することを目的としています。これらのアプリケーションの一般的なサンプルは以下の通りです：
 
-**❓ 特定のドキュメントに対する質問回答**
+**❓ 特定のドキュメントに対する質問と応答**
 
 - [ドキュメント](https://langchain.readthedocs.io/en/latest/use_cases/question_answering.html)
 - エンドツーエンドの例: [Notionデータベースに対する質問回答](https://github.com/hwchase17/notion-qa)
@@ -50,21 +51,21 @@ JS/TSバージョンをお探しですか？ [LangChain.js](https://github.com/h
 LangChainは、主に6つの領域で役立つように設計されています。
 これらは、複雑さの増す順に以下の通りです。
 
-**📃 LLMとプロンプト:**
+**📃 LLMsとプロンプト:**
 
-プロンプト管理、プロンプト最適化、すべてのLLMのための汎用インターフェース、およびLLMを操作するための共通ユーティリティが含まれます。
+これにはプロンプト管理、プロンプト最適化、すべてのLLMsのための汎用のインターフェース、LLMsを操作するための共通のユーティリティが含まれます。
 
 **🔗 チェーン:**
 
-チェーンは単一のLLM呼び出しを超えて、シーケンスの呼び出し（LLMまたは別のユーティリティに関係なく）を扱います。LangChainは、チェーンの標準インターフェース、他のツールとの多くの統合、および一般的なアプリケーションのエンドツーエンドチェーンを提供します。
+チェーンは単一のLLM呼び出しを越えて、（LLMや別のユーティリティへの）呼び出しのシーケンスを伴います。LangChainは、チェーンのための標準インターフェース、他のツールとの豊富なインテグレーション、そして一般的なアプリケーション向けのエンド・ツー・エンドのチェーンなどを提供します。
 
-**📚 データ拡張生成:**
+**📚 データ増強生成：**
 
-データ拡張生成は、外部データソースとやり取りして生成ステップで使用するデータを取得するチェーンの特定のタイプを扱います。例として、長いテキストの要約や特定のデータソースに対する質問/回答があります。
+データ増強生成では、最初に外部データソースと対話をし、生成ステップで使用するデータを取得する、特定のタイプのチェーンが含まれます。 サンプルとして、長いテキストの要約や、特定のデータソースに対する質問/回答などがあります。
 
 **🤖 エージェント:**
 
-エージェントは、LLMがどのアクションを取るかを決定し、そのアクションを実行し、観測を行い、終了するまで繰り返すものです。LangChainは、エージェントの標準インターフェース、選択可能なエージェントのセット、およびエンドツーエンドエージェントの例を提供します。
+エージェントはLLMがどのアクションを取るか決断を下し、そのアクションを実行し観察結果を確認し、完了するまでそれを繰り返すというものです。LangChainはエージェントの標準インターフェース、エージェントの選択、エージェントのエンドツーエンドのサンプルを提供しています。
 
 **🧠 メモリ:**
 

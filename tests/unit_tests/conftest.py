@@ -1,13 +1,29 @@
-import pytest
-import importlib
-
+"""Configuration for unit tests."""
 from importlib import util
-from typing import Dict
+from typing import Dict, Sequence
+
+import pytest
+from pytest import Config, Function
 
 
-def pytest_collection_modifyitems(config, items):
-    """Adds a marker to tests that require a library to be installed to run."""
+def pytest_collection_modifyitems(config: Config, items: Sequence[Function]) -> None:
+    """Add implementations for handling custom markers.
+
+    At the moment, this adds support for a custom `requires` marker.
+
+    The `requires` marker is used to denote tests that require one or more packages
+    to be installed to run. If the package is not installed, the test is skipped.
+
+    The `requires` marker syntax is:
+
+    .. code-block:: python
+
+        @pytest.mark.requires("package1", "package2")
+        def test_something():
+            ...
+    """
     # Mapping from the name of a package to whether it is installed or not.
+    # Used to avoid repeated calls to `util.find_spec`
     required_pkgs_info: Dict[str, bool] = {}
 
     for item in items:
@@ -21,8 +37,8 @@ def pytest_collection_modifyitems(config, items):
                 if pkg not in required_pkgs_info:
                     required_pkgs_info[pkg] = util.find_spec(pkg) is not None
 
-                # If the package is installed, we can continue, if not
-                # we break immediately and set all_exist to False
                 if not required_pkgs_info[pkg]:
+                    # If the package is not installed, we immediately break
+                    # and mark the test as skipped.
                     item.add_marker(pytest.mark.skip(reason=f"requires pkg: `{pkg}`"))
                     break

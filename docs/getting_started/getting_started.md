@@ -54,7 +54,7 @@ from langchain.llms import OpenAI
 ```
 
 そして、任意の引数でラッパーを初期化することができます。
-このサンプルでは、出力がよりランダムになることを望んでいるので、高い温度で初期化することにします。
+このサンプルでは、おそらく出力がよりランダムになるようにしたいので、高い温度で初期化することにします。
 
 ```python
 llm = OpenAI(temperature=0.9)
@@ -63,7 +63,7 @@ llm = OpenAI(temperature=0.9)
 これで、入力に対して呼び出すことができます！
 
 ```python
-text = "カラフルな靴下を作る会社に良い会社名は何でしょうか？"
+text = "カラフルな靴下を作る会社の社名として、何かいいものはありますか？"
 print(llm(text))
 ```
 
@@ -92,7 +92,7 @@ from langchain.prompts import PromptTemplate
 
 prompt = PromptTemplate(
     input_variables=["product"],
-    template="{product}を作る会社の名前として良いものは何ですか？",
+    template="{product}を作る会社の社名として、何かいいものはありますか？",
 )
 ```
 
@@ -103,7 +103,7 @@ print(prompt.format(product="カラフルな靴下"))
 ```
 
 ```pycon
-カラフルな靴下を作る会社にふさわしい名前は何ですか？
+カラフルな靴下を作るを作る会社の社名として、何かいいものはありますか？
 ```
 
 
@@ -126,26 +126,26 @@ from langchain.llms import OpenAI
 llm = OpenAI(temperature=0.9)
 prompt = PromptTemplate(
     input_variables=["product"],
-    template="{product}を作る会社の名前として良いものは何ですか？",
+    template="{product}を作る会社の社名として、何かいいものはありますか？",
 )
 ```
 
-これでユーザー入力を受け取り、それをプロンプトにフォーマットし、LLMに送信する非常にシンプルなチェーンを作成できます。
+これで、ユーザーの入力を受け取り、それを使ってプロンプトを形式化し、LLMに送信するという、非常にシンプルなチェーンを作れるようになりました:
 
 ```python
 from langchain.chains import LLMChain
 chain = LLMChain(llm=llm, prompt=prompt)
 ```
 
-これで製品だけを指定してチェーンを実行できます！
+これで製品を指定するだけで、このチェーンを走らせることができるようになりました！
 
 ```python
 chain.run("カラフルな靴下")
 # -> '\n\nSocktastic!'
 ```
 
-これで最初のチェーン、LLMチェーンができました。
-これはより複雑なチェーンを扱う上で基本となるシンプルなタイプのチェーンの一つです。
+では行きましょう！まず1つ目のチェーン、LLMチェーンがあります。
+チェーンのタイプとしては単純な部類に入りますが、その仕組みを理解することでより複雑なチェーンに対応することができます。
 
 [詳細については、チェーンの入門ガイドをご覧ください。](../modules/chains/getting_started.ipynb)
 
@@ -157,15 +157,16 @@ chain.run("カラフルな靴下")
 
 正しく使用するとエージェントは非常に強力になります。このチュートリアルでは最も簡単で最も高レベルなAPIを使って、エージェントを簡単に使う方法を紹介します。
 
+
 エージェントをロードするには、以下の概念を理解する必要があります。
 
-- ツール: 特定の任務を実行する関数。これにはGoogle検索、データベース検索、Python REPL、他のチェーンなどが含まれます。ツールのインターフェースは、現在入力として文字列を持つことが期待されている関数で、出力として文字列を持つことが期待されています。
-- LLM: エージェントを制御する言語モデル。
-- エージェント: 使用するエージェント。これはサポートされているエージェントクラスを参照する文字列である必要があります。このノートブックでは最も簡単で最も高レベルなAPIに焦点を当てているため、これは標準のサポートされているエージェントの使用に限定されます。カスタムエージェントを実装したい場合は、カスタムエージェントのドキュメント（近日公開予定）を参照してください。
+- ツール: 特定の任務を遂行する関数のこと。 これは例えば、次のようなものがあります： Google検索、データベース検索、Python REPLその他のチェーンなど。現在、ツールのインターフェースは文字列を入力とし文字列を出力として想定される関数です。
+- LLM: エージェントを動かす言語モデル。
+- エージェント: 使用するエージェント。これは、サポートしているエージェントクラスを指し示す文字列でなければなりません。このノートブックでは、最もシンプルで高レベルのAPIに焦点を当てているため、標準的にサポートされているエージェントの使用のみを取り上げています。カスタムエージェントを実装したい場合は、カスタムエージェントのドキュメントを参照してください（近日公開予定）。
 
 **エージェント**: サポートされているエージェントとその仕様のリストについては[こちら](../modules/agents/getting_started.ipynb)を参照してください。
 
-**ツール**: 事前定義されたツールとその仕様のリストについては[こちら](../modules/agents/tools/getting_started.md)を参照してください。
+**ツール**: 事前に定義されたツールとその仕様のリストについては[こちら](../modules/agents/tools/getting_started.md)を参照してください。
 
 この例ではSerpAPI Pythonパッケージもインストールする必要があります。
 
@@ -203,29 +204,29 @@ agent.run("昨日のサンフランシスコの最高気温は華氏何度でし
 
 ```pycon
 > 新しいAgentExecutorチェーンに入ります...
- まず気温を調べてから、計算機を使って0.023乗する必要があります。
+ まず温度を求め、それを電卓で0.023乗する必要があります。
 アクション: 検索
-アクション入力: "昨日のサンフランシスコの最高気温"
+アクション 入力: "昨日のサンフランシスコの最高気温"
 観察: サンフランシスコの昨日の気温。最高気温：57°F（午後1時56分）最低気温：49°F（午前1時56分）平均気温 ...
 思考: 気温が分かったので、計算機を使って0.023乗できます。
 アクション: 計算機
 アクション入力: 57^0.023
-観察: 答え: 1.0974509573251117
+観察: 回答: 1.0974509573251117
 
 思考: 最終的な答えが分かりました
-最終回答: 昨日のサンフランシスコの最高気温（華氏）を0.023乗した値は1.0974509573251117です。
+最終的な解答: 昨日のサンフランシスコの最高気温（華氏）を0.023乗した値は1.0974509573251117です。
 
 > チェーンが終了しました。
 ```
 
 
-## メモリ: チェーンとエージェントに状態を追加する
+## メモリ： チェーンとエージェントに状態を持たせる
 
-これまでのチェーンとエージェントはすべてステートレスでした。しかし、多くの場合、チェーンやエージェントに「メモリ」の概念を持たせて、以前のやり取りに関する情報を覚えておくことが望ましいでしょう。これが最も明確で簡単な例は、チャットボットを設計する場合です。過去のメッセージを覚えておくことで、その文脈を利用してより良い会話ができるようになります。これは「短期記憶」の一種です。もっと複雑な方面では、チェーンやエージェントが時間をかけて重要な情報を覚えておくことができます。これは「長期記憶」の一形態です。後者の具体的なアイデアについては、この[素晴らしい論文](https://memprompt.com/)を参照してください。
+今までのチェーンやエージェントは、すべてステートレス（状態を持たない）でした。 しかし、チェーンやエージェントに「記憶」の概念を持たせて、以前の対話に関する情報を記憶させたいと思うことがよくあります。例えば、チャットボットを設計する場合、以前のメッセージを記憶させ、そこから得られるコンテキストを利用してより良い会話を行えるようにする、というのが最も明確でシンプルな例です。 これは「短期記憶」の一種と言えるでしょう。もっと複雑な例では、チェーンやエージェントが重要な情報を長期的に記憶していくようなイメージです。後者に関するより具体的なアイデアについては、この[素晴らしい論文](https://memprompt.com/)を参照してください。
 
-LangChainは、この目的のために特別に作成されたいくつかのチェーンを提供しています。このノートブックではそのチェーン（`ConversationChain`）を2つの異なるタイプのメモリで使用する方法を説明します。
+LangChainはこの目的のために特別に作られたチェーンをいくつか提供しています。このノートブックでは、これらのチェーンの一つ（`ConversationChain`）を2つの異なるタイプのメモリで使用する方法を説明します。
 
-デフォルトでは`ConversationChain`は、すべての過去の入力/出力を覚えておいて、渡されるコンテキストに追加する簡単なタイプのメモリを持っています。このチェーンを使ってみましょう（`verbose=True`に設定してプロンプトが表示されるようにします）。
+デフォルトでは、`ConversationChain`は単純なタイプのメモリを持っており、以前のすべての入出力を記憶して、渡されたコンテキストに追加します。このチェーンの使い方を見てみましょう（プロンプトが表示されるように `verbose=True` をセットします）。
 
 ```python
 from langchain import OpenAI, ConversationChain
@@ -240,9 +241,9 @@ print(output)
 ```pycon
 > Entering new chain...
 Prompt after formatting:
-以下は、人間とAIのフレンドリーな会話です。AIはおしゃべりで、コンテキストから具体的な内容をたくさん提供してくれます。AIは質問の答えを知らない場合、正直に「知らない」と答えます。
+以下は、人間とAIのフレンドリーな 会話です。AIはおしゃべりで、コンテキストから具体的な情報をたくさん提供してくれます。AIは質問の答えを知らない場合、素直に「分かりません」と答えます。
 
-現在の会話:
+Current conversation:
 
 Human: やあ、こんにちは！
 AI:
@@ -259,7 +260,7 @@ print(output)
 ```pycon
 > Entering new chain...
 Prompt after formatting:
-以下は、人間とAIのフレンドリーな会話です。 AIはおしゃべりで、コンテキストから具体的な内容をたくさん提供してくれます。 AIは質問の答えを知らない場合、正直に「知らない」と答えます。
+以下は、人間とAIのフレンドリーな 会話です。AIはおしゃべりで、コンテキストから具体的な情報をたくさん提供してくれます。AIは質問の答えを知らない場合、素直に「分かりません」と答えます。
 
 Current conversation:
 
@@ -304,7 +305,7 @@ OpenAIのgpt-3.5-turboとgpt-4モデルでは、複数のメッセージを渡�
 
 ```python
 messages = [
-    SystemMessage(content="あなたは、英語から日本語に翻訳してくれる役に立つアシスタントです。"),
+    SystemMessage(content="あなたは、英語を日本語に翻訳してくれる役に立つアシスタントです。"),
     HumanMessage(content="I love programming.")
 ]
 chat(messages)
@@ -316,11 +317,11 @@ chat(messages)
 ```python
 batch_messages = [
     [
-        SystemMessage(content="あなたは、英語から日本語に翻訳してくれる役に立つアシスタントです。"),
+        SystemMessage(content="あなたは、英語を日本語に翻訳する役に立つアシスタントです。"),
         HumanMessage(content="I love programming.")
     ],
     [
-        SystemMessage(content="あなたは、英語から日本語に翻訳してくれる役に立つアシスタントです。"),
+        SystemMessage(content="あなたは、英語を日本語に翻訳する役に立つアシスタントです。"),
         HumanMessage(content"I love artificial intelligence.")
     ],
 ]
@@ -329,7 +330,7 @@ result
 # -> LLMResult(generations=[[ChatGeneration(text="J'aime programmer.", generation_info=None, message=AIMessage(content="J'aime programmer.", additional_kwargs={}))], [ChatGeneration(text="J'aime l'intelligence artificielle.", generation_info=None, message=AIMessage(content="J'aime l'intelligence artificielle.", additional_kwargs={}))]], llm_output={'token_usage': {'prompt_tokens': 57, 'completion_tokens': 20, 'total_tokens': 77}})
 ```
 
-このLLMResultからトークン使用量などを回復できます。
+このLLMResultからトークンの使用状況などを復元することができます：
 
 ```
 result.llm_output['token_usage']
@@ -351,7 +352,7 @@ from langchain.prompts.chat import (
 
 chat = ChatOpenAI(temperature=0)
 
-template = "あなたは、{input_language}を{output_language}に翻訳する便利なアシスタントです。"
+template = "あなたは、{input_language}を{output_language}に翻訳する役に立つアシスタントです。"
 system_message_prompt = SystemMessagePromptTemplate.from_template(template)
 human_template = "{text}"
 human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
@@ -377,7 +378,7 @@ from langchain.prompts.chat import (
 
 chat = ChatOpenAI(temperature=0)
 
-template = "あなたは、{input_language}を{output_language}に翻訳する便利なアシスタントです。"
+template = "あなたは、{input_language}を{output_language}に翻訳する役に立つアシスタントです。"
 system_message_prompt = SystemMessagePromptTemplate.from_template(template)
 human_template = "{text}"
 human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
@@ -415,15 +416,15 @@ agent.run("オリビア・ワイルドの彼氏は誰ですか？ 彼の現在�
 
 ```pycon
 > 新しいAgentExecutorチェーンに入る...
-考え：オリビア・ワイルドのボーイフレンドを検索し、彼の年齢を0.23乗するために電卓を使う必要がある。
+思考：オリビア・ワイルドのボーイフレンドを検索し、彼の年齢を0.23乗するために電卓を使う必要がある。
 アクション：
 {
   "action": "Search",
-  "action_input": "Olivia Wilde boyfriend"
+  "action_input": "オリビア・ワイルドのボーイフレンド"
 }
 
-観察：スディケイスとワイルドの関係は2020年11月に終了しました。ワイルドは、2022年のCinemaConでDon't Worry Darlingを発表している間に、子供の親権に関する裁判文書を公に受け取りました。2021年1月、ワイルドはDon't Worry Darlingの撮影中に出会った歌手ハリー・スタイルズと付き合い始めました。
-考え：ハリー・スタイルズの現在の年齢を検索する必要がある。
+観察：スタイルズとワイルドの関係は2020年11月に終わりました。 ワイルドはシネコン2022で『Don't Worry Darling』を発表している最中に、子供の親権に関する裁判所の書類を提出されたことが公になっている。 2021年1月、ワイルドは『Don't Worry Darling』の撮影中に出会った歌手のハリー・スタイルズと交際を始めた。
+思考：ハリー・スタイルズの現在の年齢を検索する必要がある。
 アクション：
 {
   "action": "Search",
@@ -431,7 +432,7 @@ agent.run("オリビア・ワイルドの彼氏は誰ですか？ 彼の現在�
 }
 
 観察：29歳
-考え：今度は、29を0.23乗する必要がある。
+思考：今度は、29を0.23乗する必要がある。
 アクション：
 {
   "action": "Calculator",
@@ -440,8 +441,8 @@ agent.run("オリビア・ワイルドの彼氏は誰ですか？ 彼の現在�
 
 観察：答え：2.169459462491557
 
-考え：最終的な答えがわかりました。
-最終的な答え：2.169459462491557
+思考：最終的な答えがわかりました。
+最終的な解答：2.169459462491557
 
 > チェーンを終了しました。
 '2.169459462491557'

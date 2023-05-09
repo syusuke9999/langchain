@@ -1,5 +1,5 @@
 # flake8: noqa
-PREFIX = """Answer the following questions as best you can. You have access to the following tools:"""
+PREFIX = """Answer the following questions as best you can. Please ensure to answer in Japanese. You have access to the following tools:"""
 FORMAT_INSTRUCTIONS = """The way you use the tools is by specifying a json blob.
 Specifically, this json should have a `action` key (with the name of the tool to use) and a `action_input` key (with the input to the tool going here).
 

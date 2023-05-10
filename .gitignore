@@ -158,4 +158,8 @@ GPT-4-with-Google.py
 ./agent.py
 remove-api-key.txt
 bfg-1.14.0.jar
+./docs/modules/agents/getting_started.ipynb
 docs/modules/agents/getting_started.ipynb
+./langchain/agents/chat/prompt.py
+langchain/agents/chat/prompt.py
+langchain/agents/chat/prompt.py

@@ -36,6 +36,7 @@ class GoogleSerperAPIWrapper(BaseModel):
 
     class Config:
         """Configuration for this pydantic object."""
+
         arbitrary_types_allowed = True
 
     @root_validator()
@@ -137,7 +138,7 @@ class GoogleSerperAPIWrapper(BaseModel):
         return " ".join(snippets)
 
     def _google_serper_search_results(
-            self, search_term: str, search_type: str = "search", **kwargs: Any
+        self, search_term: str, search_type: str = "search", **kwargs: Any
     ) -> dict:
         headers = {
             "X-API-KEY": self.serper_api_key or "",
@@ -155,7 +156,7 @@ class GoogleSerperAPIWrapper(BaseModel):
         return search_results
 
     async def _async_google_serper_search_results(
-            self, search_term: str, search_type: str = "search", **kwargs: Any
+        self, search_term: str, search_type: str = "search", **kwargs: Any
     ) -> dict:
         headers = {
             "X-API-KEY": self.serper_api_key or "",
@@ -170,12 +171,12 @@ class GoogleSerperAPIWrapper(BaseModel):
         if not self.aiosession:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                        url, params=params, headers=headers, raise_for_status=False
+                    url, params=params, headers=headers, raise_for_status=False
                 ) as response:
                     search_results = await response.json()
         else:
             async with self.aiosession.post(
-                    url, params=params, headers=headers, raise_for_status=True
+                url, params=params, headers=headers, raise_for_status=True
             ) as response:
                 search_results = await response.json()
 

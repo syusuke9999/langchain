@@ -4,3 +4,10 @@
 .mypy_cache
 .pytest_cache
 Dockerfile
+./agent.py
+bfg-1.14.0.jar
+GTP-4-with-Google.py
+./README.md
+./remove-api-key.txt
+./requirements.txt
+*.patch

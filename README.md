@@ -1,84 +1,93 @@
 # 🦜️🔗 LangChain
 
-⚡ LLMを使ったアプリケーション構築を通じた組み合わせ可能性 ⚡
+⚡ Building applications with LLMs through composability ⚡
 
-[![lint](https://github.com/hwchase17/langchain/actions/workflows/lint.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/lint.yml) [![test](https://github.com/hwchase17/langchain/actions/workflows/test.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/test.yml) [![linkcheck](https://github.com/hwchase17/langchain/actions/workflows/linkcheck.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/linkcheck.yml) [![Downloads](https://static.pepy.tech/badge/langchain/month)](https://pepy.tech/project/langchain) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchainai.svg?style=social&label=Follow%20%40LangChainAI)](https://twitter.com/langchainai) [![](https://dcbadge.vercel.app/api/server/6adMQxSpJS?compact=true&style=flat)](https://discord.gg/6adMQxSpJS) [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/hwchase17/langchain) [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/hwchase17/langchain)
+[![lint](https://github.com/hwchase17/langchain/actions/workflows/lint.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/lint.yml)
+[![test](https://github.com/hwchase17/langchain/actions/workflows/test.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/test.yml)
+[![linkcheck](https://github.com/hwchase17/langchain/actions/workflows/linkcheck.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/linkcheck.yml)
+[![Downloads](https://static.pepy.tech/badge/langchain/month)](https://pepy.tech/project/langchain)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchainai.svg?style=social&label=Follow%20%40LangChainAI)](https://twitter.com/langchainai)
+[![](https://dcbadge.vercel.app/api/server/6adMQxSpJS?compact=true&style=flat)](https://discord.gg/6adMQxSpJS)
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/hwchase17/langchain)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/hwchase17/langchain)
+[![GitHub star chart](https://img.shields.io/github/stars/hwchase17/langchain?style=social)](https://star-history.com/#hwchase17/langchain)
 
 
-JS/TSバージョンをお探しですか？ [LangChain.js](https://github.com/hwchase17/langchainjs)をチェックしてください。
+Looking for the JS/TS version? Check out [LangChain.js](https://github.com/hwchase17/langchainjs).
 
-**本番環境サポート:** LangChainsを本番環境に移行する際に、より包括的なサポートを提供したいと考えています。
-[このフォーム](https://forms.gle/57d8AmXBYp8PP8tZA)に記入していただくと、専用のサポートSlackチャンネルを設定します。
+**Production Support:** As you move your LangChains into production, we'd love to offer more comprehensive support.
+Please fill out [this form](https://forms.gle/57d8AmXBYp8PP8tZA) and we'll set up a dedicated support Slack channel.
 
-## クイックインストール
+## Quick Install
 
 `pip install langchain`
-または
+or
 `conda install langchain -c conda-forge`
 
-## 🤔 これは何？
+## 🤔 What is this?
 
-大規模言語モデル（LLMs）は、開発者がこれまでできなかったアプリケーションを構築できるようにする、革新的なテクノロジーとして注目されています。 しかし、これらのLLMsを単独で使っても真にパワフルなアプリケーションを作るには不十分な場合が多く、LLMsを他の計算ソースや知識と組み合わせることで真のパワーを発揮することができます。
+Large language models (LLMs) are emerging as a transformative technology, enabling developers to build applications that they previously could not. However, using these LLMs in isolation is often insufficient for creating a truly powerful app - the real power comes when you can combine them with other sources of computation or knowledge.
 
-このライブラリーはそのようなアプリケーションの開発を支援することを目的としています。これらのアプリケーションの一般的なサンプルは以下の通りです：
+This library aims to assist in the development of those types of applications. Common examples of these applications include:
 
-**❓ 特定のドキュメントに対する質問と応答**
+**❓ Question Answering over specific documents**
 
-- [ドキュメント](https://langchain.readthedocs.io/en/latest/use_cases/question_answering.html)
-- エンドツーエンドの例: [Notionデータベースに対する質問回答](https://github.com/hwchase17/notion-qa)
+- [Documentation](https://langchain.readthedocs.io/en/latest/use_cases/question_answering.html)
+- End-to-end Example: [Question Answering over Notion Database](https://github.com/hwchase17/notion-qa)
 
-**💬 チャットボット**
+**💬 Chatbots**
 
-- [ドキュメント](https://langchain.readthedocs.io/en/latest/use_cases/chatbots.html)
-- エンドツーエンドの例: [Chat-LangChain](https://github.com/hwchase17/chat-langchain)
+- [Documentation](https://langchain.readthedocs.io/en/latest/use_cases/chatbots.html)
+- End-to-end Example: [Chat-LangChain](https://github.com/hwchase17/chat-langchain)
 
-**🤖 エージェント**
+**🤖 Agents**
 
-- [ドキュメント](https://langchain.readthedocs.io/en/latest/modules/agents.html)
-- エンドツーエンドの例: [GPT+WolframAlpha](https://huggingface.co/spaces/JavaFXpert/Chat-GPT-LangChain)
+- [Documentation](https://langchain.readthedocs.io/en/latest/modules/agents.html)
+- End-to-end Example: [GPT+WolframAlpha](https://huggingface.co/spaces/JavaFXpert/Chat-GPT-LangChain)
 
-## 📖 ドキュメント
+## 📖 Documentation
 
-以下の内容についての詳細なドキュメントは[こちら](https://langchain.readthedocs.io/en/latest/?)を参照してください。
+Please see [here](https://langchain.readthedocs.io/en/latest/?) for full documentation on:
 
-- はじめに（インストール、環境設定、簡単な例）
-- How-Toの例（デモ、統合、ヘルパー関数）
-- リファレンス（完全なAPIドキュメント）
-- リソース（コアコンセプトの高レベルな説明）
+- Getting started (installation, setting up the environment, simple examples)
+- How-To examples (demos, integrations, helper functions)
+- Reference (full API docs)
+- Resources (high-level explanation of core concepts)
 
-## 🚀 これは何に役立ちますか？
+## 🚀 What can this help with?
 
-LangChainは、主に6つの領域で役立つように設計されています。
-これらは、複雑さの増す順に以下の通りです。
+There are six main areas that LangChain is designed to help with.
+These are, in increasing order of complexity:
 
-**📃 LLMsとプロンプト:**
+**📃 LLMs and Prompts:**
 
-これにはプロンプト管理、プロンプト最適化、すべてのLLMsのための汎用のインターフェース、LLMsを操作するための共通のユーティリティが含まれます。
+This includes prompt management, prompt optimization, a generic interface for all LLMs, and common utilities for working with LLMs.
 
-**🔗 チェーン:**
+**🔗 Chains:**
 
-チェーンは単一のLLM呼び出しを越えて、（LLMや別のユーティリティへの）呼び出しのシーケンスを伴います。LangChainは、チェーンのための標準インターフェース、他のツールとの豊富なインテグレーション、そして一般的なアプリケーション向けのエンド・ツー・エンドのチェーンなどを提供します。
+Chains go beyond a single LLM call and involve sequences of calls (whether to an LLM or a different utility). LangChain provides a standard interface for chains, lots of integrations with other tools, and end-to-end chains for common applications.
 
-**📚 データ増強生成：**
+**📚 Data Augmented Generation:**
 
-データ増強生成では、最初に外部データソースと対話をし、生成ステップで使用するデータを取得する、特定のタイプのチェーンが含まれます。 サンプルとして、長いテキストの要約や、特定のデータソースに対する質問/回答などがあります。
+Data Augmented Generation involves specific types of chains that first interact with an external data source to fetch data for use in the generation step. Examples include summarization of long pieces of text and question/answering over specific data sources.
 
-**🤖 エージェント:**
+**🤖 Agents:**
 
-エージェントはLLMがどのアクションを取るか決断を下し、そのアクションを実行し観察結果を確認し、完了するまでそれを繰り返すというものです。LangChainはエージェントの標準インターフェース、エージェントの選択、エージェントのエンドツーエンドのサンプルを提供しています。
+Agents involve an LLM making decisions about which Actions to take, taking that Action, seeing an Observation, and repeating that until done. LangChain provides a standard interface for agents, a selection of agents to choose from, and examples of end-to-end agents.
 
-**🧠 メモリ:**
+**🧠 Memory:**
 
-メモリは、チェーン/エージェントの呼び出し間で状態を維持することを指します。LangChainは、メモリの標準インターフェース、メモリ実装のコレクション、およびメモリを使用するチェーン/エージェントの例を提供します。
+Memory refers to persisting state between calls of a chain/agent. LangChain provides a standard interface for memory, a collection of memory implementations, and examples of chains/agents that use memory.
 
-**🧐 評価:**
+**🧐 Evaluation:**
 
-[BETA] 生成モデルは、従来の指標で評価するのが非常に難しいことで知られています。それらを評価する新しい方法の1つは、言語モデル自体を使用して評価を行うことです。LangChainは、これを支援するためのいくつかのプロンプト/チェーンを提供します。
+[BETA] Generative models are notoriously hard to evaluate with traditional metrics. One new way of evaluating them is using language models themselves to do the evaluation. LangChain provides some prompts/chains for assisting in this.
 
-これらの概念の詳細については、[完全なドキュメント](https://langchain.readthedocs.io/en/latest/)を参照してください。
+For more information on these concepts, please see our [full documentation](https://langchain.readthedocs.io/en/latest/).
 
-## 💁 貢献する方法
+## 💁 Contributing
 
-急速に発展している分野のオープンソースプロジェクトとして、新機能の追加、インフラの改善、ドキュメントの向上など、どのような形での貢献も大歓迎です。
+As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
 
-貢献方法の詳細については、[こちら](.github/CONTRIBUTING.md)を参照してください。
+For detailed information on how to contribute, see [here](.github/CONTRIBUTING.md).

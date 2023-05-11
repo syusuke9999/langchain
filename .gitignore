@@ -160,3 +160,4 @@ remove-api-key.txt
 bfg-1.14.0.jar
 docs/modules/agents/getting_started.ipynb
 langchain/agents/chat/prompt.py
+secret-patterns.txt

@@ -1,5 +1,7 @@
 # flake8: noqa
-PREFIX = """Answer the following questions as best you can. You have access to the following tools:"""
+PREFIX = """Answer the following questions as best you can.Please think in Japanese.
+When searching, try the search query in English or Japanese, whichever you can find the best answer.
+But please be sure to answer question in Japanese. You have access to the following tools"""
 FORMAT_INSTRUCTIONS = """Use the following format:
 
 Question: the input question you must answer

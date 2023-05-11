@@ -1,6 +1,6 @@
-"""Chain that calls SerpAPI.
+"""SerpAPIを呼び出すチェーン。
 
-Heavily borrowed from https://github.com/ofirpress/self-ask
+大部分はhttps://github.com/ofirpress/self-askから借用されています。
 """
 import os
 import sys
@@ -13,7 +13,7 @@ from langchain.utils import get_from_dict_or_env
 
 
 class HiddenPrints:
-    """Context manager to hide prints."""
+    """コンテキストマネージャーでプリントを非表示にする。"""
 
     def __enter__(self) -> None:
         """Open file to pipe stdout to."""
@@ -27,17 +27,17 @@ class HiddenPrints:
 
 
 class SerpAPIWrapper(BaseModel):
-    """Wrapper around SerpAPI.
+    """SerpAPIをラップするクラス。
 
-    To use, you should have the ``google-search-results`` python package installed,
-    and the environment variable ``SERPAPI_API_KEY`` set with your API key, or pass
-    `serpapi_api_key` as a named parameter to the constructor.
+        使い方：``google-search-results`` Pythonパッケージをインストールし、
+        環境変数``SERPAPI_API_KEY``にAPIキーを設定するか、
+        コンストラクタに`serpapi_api_key`という名前のパラメータを渡してください。
 
-    Example:
-        .. code-block:: python
+        例：
+            .. code-block:: python
 
-            from langchain import SerpAPIWrapper
-            serpapi = SerpAPIWrapper()
+                from langchain import SerpAPIWrapper
+                serpapi = SerpAPIWrapper()
     """
 
     search_engine: Any  #: :meta private:
@@ -60,7 +60,7 @@ class SerpAPIWrapper(BaseModel):
 
     @root_validator()
     def validate_environment(cls, values: Dict) -> Dict:
-        """Validate that api key and python package exists in environment."""
+        """環境にAPIキーとPythonパッケージが存在することを確かめる。"""
         serpapi_api_key = get_from_dict_or_env(
             values, "serpapi_api_key", "SERPAPI_API_KEY"
         )
@@ -77,15 +77,15 @@ class SerpAPIWrapper(BaseModel):
         return values
 
     async def arun(self, query: str, **kwargs: Any) -> str:
-        """Run query through SerpAPI and parse result async."""
+        """SerpAPIでクエリを実行し、結果を非同期でパースする。"""
         return self._process_response(await self.aresults(query))
 
     def run(self, query: str, **kwargs: Any) -> str:
-        """Run query through SerpAPI and parse result."""
+        """SerpAPIでクエリを実行し、結果を解析します。"""
         return self._process_response(self.results(query))
 
     def results(self, query: str) -> dict:
-        """Run query through SerpAPI and return the raw result."""
+        """SerpAPIでクエリを実行し、生の結果を返します"""
         params = self.get_params(query)
         with HiddenPrints():
             search = self.search_engine(params)
@@ -93,7 +93,7 @@ class SerpAPIWrapper(BaseModel):
         return res
 
     async def aresults(self, query: str) -> dict:
-        """Use aiohttp to run query through SerpAPI and return the results async."""
+        """aiohttpを利用してSerpAPIでクエリを実行し、結果を非同期で返します。"""
 
         def construct_url_and_params() -> Tuple[str, Dict[str, str]]:
             params = self.get_params(query)
@@ -116,7 +116,7 @@ class SerpAPIWrapper(BaseModel):
         return res
 
     def get_params(self, query: str) -> Dict[str, str]:
-        """Get parameters for SerpAPI."""
+        """SerpAPI用のパラメータを取得します。"""
         _params = {
             "api_key": self.serpapi_api_key,
             "q": query,
@@ -126,7 +126,7 @@ class SerpAPIWrapper(BaseModel):
 
     @staticmethod
     def _process_response(res: dict) -> str:
-        """Process response from SerpAPI."""
+        """SerpAPIからの応答を処理します。"""
         if "error" in res.keys():
             raise ValueError(f"Got error from SerpAPI: {res['error']}")
         if "answer_box" in res.keys() and "answer" in res["answer_box"].keys():

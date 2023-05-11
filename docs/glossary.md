@@ -1,89 +1,90 @@
-# 用語集
+# Glossary
 
-これは、LLMアプリケーションを開発する際に一般的に使用される用語の集まりです。
-概念が初めて紹介された外部の論文や資料への参照や、LangChainでその概念が使用されている場所への参照が含まれています。
+This is a collection of terminology commonly used when developing LLM applications.
+It contains reference to external papers or sources where the concept was first introduced,
+as well as to places in LangChain where the concept is used.
 
-## 思考の連鎖プロンプト
+## Chain of Thought Prompting
 
-モデルに中間的な推論ステップの一連の生成を促すプロンプト技術。
-この挙動を誘発するための簡単な方法として、プロンプトに「ステップ・バイ・ステップで考えてみましょう」と含めることができます。
+A prompting technique used to encourage the model to generate a series of intermediate reasoning steps.
+A less formal way to induce this behavior is to include “Let’s think step-by-step” in the prompt.
 
-リソース:
+Resources:
 
 - [Chain-of-Thought Paper](https://arxiv.org/pdf/2201.11903.pdf)
 - [Step-by-Step Paper](https://arxiv.org/abs/2112.00114)
 
-## アクションプラン生成
+## Action Plan Generation
 
-言語モデルを使用してアクションを生成するプロンプトの使用法。
-これらのアクションの結果は、言語モデルにフィードバックされ、次のアクションを生成するために使用されます。
+A prompt usage that uses a language model to generate actions to take.
+The results of these actions can then be fed back into the language model to generate a subsequent action.
 
-リソース:
+Resources:
 
 - [WebGPT Paper](https://arxiv.org/pdf/2112.09332.pdf)
 - [SayCan Paper](https://say-can.github.io/assets/palm_saycan.pdf)
 
-## ReActプロンプト
+## ReAct Prompting
 
-思考の連鎖プロンプトとアクションプラン生成を組み合わせたプロンプト技術。
-これにより、モデルはどのアクションを取るべきかを考え、そのアクションを実行するようになります。
+A prompting technique that combines Chain-of-Thought prompting with action plan generation.
+This induces the to model to think about what action to take, then take it.
 
-リソース:
+Resources:
 
 - [Paper](https://arxiv.org/pdf/2210.03629.pdf)
 - [LangChain Example](modules/agents/agents/examples/react.ipynb)
 
 ## Self-ask
 
-思考の連鎖プロンプトをベースにしたプロンプト方法。
-この方法では、モデルが自分自身にフォローアップの質問を明示的にし、それらの質問には外部の検索エンジンが答える。
+A prompting method that builds on top of chain-of-thought prompting.
+In this method, the model explicitly asks itself follow-up questions, which are then answered by an external search engine.
 
-リソース:
+Resources:
 
 - [Paper](https://ofir.io/self-ask.pdf)
 - [LangChain Example](modules/agents/agents/examples/self_ask_with_search.ipynb)
 
-## プロンプトチェーン
+## Prompt Chaining
 
-複数のLLM呼び出しを組み合わせ、1つのステップの出力が次のステップの入力になるようにする。
+Combining multiple LLM calls together, with the output of one-step being the input to the next.
 
-リソース:
+Resources:
 
 - [PromptChainer Paper](https://arxiv.org/pdf/2203.06566.pdf)
 - [Language Model Cascades](https://arxiv.org/abs/2207.10342)
 - [ICE Primer Book](https://primer.ought.org/)
 - [Socratic Models](https://socraticmodels.github.io/)
 
-## メメティックプロキシ
+## Memetic Proxy
 
-LLMに特定の方法で応答するように促すために、モデルが知っているコンテキストで議論をフレームし、そのタイプの応答が得られるようにする。例えば、生徒と先生の間の会話として。
+Encouraging the LLM to respond in a certain way framing the discussion in a context that the model knows of and that will result in that type of response. For example, as a conversation between a student and a teacher.
 
-リソース:
+Resources:
 
 - [Paper](https://arxiv.org/pdf/2102.07350.pdf)
 
-## 自己整合性
+## Self Consistency
 
-多様な推論パスのサンプルを取り、最も整合性のある回答を選択するデコーディング戦略。
-思考の連鎖プロンプトと組み合わせることで最も効果的です。
+A decoding strategy that samples a diverse set of reasoning paths and then selects the most consistent answer.
+Is most effective when combined with Chain-of-thought prompting.
 
-リソース:
+Resources:
 
 - [Paper](https://arxiv.org/pdf/2203.11171.pdf)
 
-## インセプション
+## Inception
 
-「ファーストパーソンインストラクション」とも呼ばれます。
-プロンプトにモデルの応答の開始部分を含めることで、モデルが特定の方法で考えるように促します。
+Also called “First Person Instruction”.
+Encouraging the model to think a certain way by including the start of the model’s response in the prompt.
 
-リソース:
+Resources:
 
 - [Example](https://twitter.com/goodside/status/1583262455207460865?s=20&t=8Hz7XBnK1OF8siQrxxCIGQ)
 
 ## MemPrompt
 
-MemPromptは、エラーやユーザーフィードバックのメモリを維持し、それらを使用してミスの繰り返しを防ぎます。
+MemPrompt maintains a memory of errors and user feedback, and uses them to prevent repetition of mistakes.
 
-リソース:
+Resources:
 
 - [Paper](https://memprompt.com/)

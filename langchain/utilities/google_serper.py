@@ -26,13 +26,12 @@ class GoogleSerperAPIWrapper(BaseModel):
     """
 
     k: int = 10
-    gl: str = "jp"
-    hl: str = "ja"
+    gl: str = "us"
+    hl: str = "en"
     type: str = "search"  # search, images, places, news
     tbs: Optional[str] = None
     serper_api_key: Optional[str] = None
     aiosession: Optional[aiohttp.ClientSession] = None
-    google_domain: str = "google.co.jp"
 
     class Config:
         """Configuration for this pydantic object."""

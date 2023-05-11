@@ -10,19 +10,18 @@ from langchain.utils import get_from_dict_or_env
 
 
 class GoogleSerperAPIWrapper(BaseModel):
-    """Wrapper around the Serper.dev Google Search API.
+    """Serper.devのGoogle検索APIをラップするクラス。
 
-    You can create a free API key at https://serper.dev.
+        無料のAPIキーは、https://serper.dev で取得できます。
 
-    To use, you should have the environment variable ``SERPER_API_KEY``
-    set with your API key, or pass `serper_api_key` as a named parameter
-    to the constructor.
+        使い方としては、環境変数``SERPER_API_KEY``にAPIキーを設定するか、
+        コンストラクタに`serper_api_key`という名前のパラメータを渡してください。
 
-    Example:
-        .. code-block:: python
+        例:
+            .. code-block:: python
 
-            from langchain import GoogleSerperAPIWrapper
-            google_serper = GoogleSerperAPIWrapper()
+                from langchain import GoogleSerperAPIWrapper
+                google_serper = GoogleSerperAPIWrapper()
     """
 
     k: int = 10
@@ -35,13 +34,13 @@ class GoogleSerperAPIWrapper(BaseModel):
     google_domain: str = "google.co.jp"
 
     class Config:
-        """Configuration for this pydantic object."""
+        """このPydanticオブジェクトの設定。"""
 
         arbitrary_types_allowed = True
 
     @root_validator()
     def validate_environment(cls, values: Dict) -> Dict:
-        """Validate that api key exists in environment."""
+        """環境にAPIキーが存在することを確認する。"""
         serper_api_key = get_from_dict_or_env(
             values, "serper_api_key", "SERPER_API_KEY"
         )
@@ -50,7 +49,7 @@ class GoogleSerperAPIWrapper(BaseModel):
         return values
 
     def results(self, query: str, **kwargs: Any) -> Dict:
-        """Run query through GoogleSearch."""
+        """GoogleSearchでクエリを実行します。"""
         return self._google_serper_search_results(
             query,
             gl=self.gl,
@@ -62,7 +61,7 @@ class GoogleSerperAPIWrapper(BaseModel):
         )
 
     def run(self, query: str, **kwargs: Any) -> str:
-        """Run query through GoogleSearch and parse result."""
+        """GoogleSearchでクエリを実行し、結果をパースする。"""
         results = self._google_serper_search_results(
             query,
             gl=self.gl,
@@ -76,7 +75,7 @@ class GoogleSerperAPIWrapper(BaseModel):
         return self._parse_results(results)
 
     async def aresults(self, query: str, **kwargs: Any) -> Dict:
-        """Run query through GoogleSearch."""
+        """GoogleSearchでクエリを実行します。"""
         results = await self._async_google_serper_search_results(
             query,
             gl=self.gl,
@@ -89,7 +88,7 @@ class GoogleSerperAPIWrapper(BaseModel):
         return results
 
     async def arun(self, query: str, **kwargs: Any) -> str:
-        """Run query through GoogleSearch and parse result async."""
+        """GoogleSearchでクエリを実行し、結果を非同期でパースする。"""
         results = await self._async_google_serper_search_results(
             query,
             gl=self.gl,
@@ -133,7 +132,7 @@ class GoogleSerperAPIWrapper(BaseModel):
                 snippets.append(f"{attribute}: {value}.")
 
         if len(snippets) == 0:
-            return "No good Google Search Result was found"
+            return "適切なGoogle検索結果が見つかりませんでした"
 
         return " ".join(snippets)
 

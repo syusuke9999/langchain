@@ -11,42 +11,42 @@ VALID_TASKS = ("feature-extraction",)
 
 
 class HuggingFaceHubEmbeddings(BaseModel, Embeddings):
-    """Wrapper around HuggingFaceHub embedding models.
+    """HuggingFaceHub埋め込みモデルをラップするクラス。
 
-    To use, you should have the ``huggingface_hub`` python package installed, and the
-    environment variable ``HUGGINGFACEHUB_API_TOKEN`` set with your API token, or pass
-    it as a named parameter to the constructor.
+        このクラスを使用するには、``huggingface_hub`` Pythonパッケージがインストールされていることと、
+        環境変数``HUGGINGFACEHUB_API_TOKEN``にAPIトークンが設定されているか、
+        またはコンストラクタに名前付きパラメータとして渡す必要があります。
 
-    Example:
-        .. code-block:: python
+        例：
+            .. code-block:: python
 
-            from langchain.embeddings import HuggingFaceHubEmbeddings
-            repo_id = "sentence-transformers/all-mpnet-base-v2"
-            hf = HuggingFaceHubEmbeddings(
-                repo_id=repo_id,
-                task="feature-extraction",
-                huggingfacehub_api_token="my-api-key",
-            )
-    """
+                from langchain.embeddings import HuggingFaceHubEmbeddings
+                repo_id = "sentence-transformers/all-mpnet-base-v2"
+                hf = HuggingFaceHubEmbeddings(
+                    repo_id=repo_id,
+                    task="feature-extraction",
+                    huggingfacehub_api_token="my-api-key",
+                )
+        """
 
     client: Any  #: :meta private:
     repo_id: str = DEFAULT_REPO_ID
-    """Model name to use."""
+    """使用するモデル名"""
     task: Optional[str] = "feature-extraction"
-    """Task to call the model with."""
+    """モデルを呼び出すタスク"""
     model_kwargs: Optional[dict] = None
-    """Key word arguments to pass to the model."""
+    """モデルに渡すキーワード引数。"""
 
     huggingfacehub_api_token: Optional[str] = None
 
     class Config:
-        """Configuration for this pydantic object."""
+        """このpydanticオブジェクトの設定。"""
 
         extra = Extra.forbid
 
     @root_validator()
     def validate_environment(cls, values: Dict) -> Dict:
-        """Validate that api key and python package exists in environment."""
+        """環境にapiキーとpythonパッケージが存在することを確認する。"""
         huggingfacehub_api_token = get_from_dict_or_env(
             values, "huggingfacehub_api_token", "HUGGINGFACEHUB_API_TOKEN"
         )
@@ -78,13 +78,13 @@ class HuggingFaceHubEmbeddings(BaseModel, Embeddings):
         return values
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        """Call out to HuggingFaceHub's embedding endpoint for embedding search docs.
+        """HuggingFaceHubの埋め込みエンドポイントを呼び出して、埋め込み検索ドキュメントを取得します。
 
-        Args:
-            texts: The list of texts to embed.
+            引数:
+                texts: 埋め込むテキストのリスト。
 
-        Returns:
-            List of embeddings, one for each text.
+            戻り値:
+                 各テキストに対する埋め込みのリスト。
         """
         # replace newlines, which can negatively affect performance.
         texts = [text.replace("\n", " ") for text in texts]
@@ -93,13 +93,13 @@ class HuggingFaceHubEmbeddings(BaseModel, Embeddings):
         return responses
 
     def embed_query(self, text: str) -> List[float]:
-        """Call out to HuggingFaceHub's embedding endpoint for embedding query text.
+        """HuggingFaceHubの埋め込みエンドポイントにクエリテキストの埋め込みを要求します。
 
-        Args:
-            text: The text to embed.
+                引数:
+                    text: 埋め込むテキスト。
 
-        Returns:
-            Embeddings for the text.
-        """
+                戻り値:
+                    テキストの埋め込み。
+         """
         response = self.embed_documents([text])[0]
         return response

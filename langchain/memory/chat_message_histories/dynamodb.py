@@ -15,14 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 class DynamoDBChatMessageHistory(BaseChatMessageHistory):
-    """Chat message history that stores history in AWS DynamoDB.
-    This class expects that a DynamoDB table with name `table_name`
-    and a partition Key of `SessionId` is present.
+    """AWS DynamoDBに履歴を保存するチャットメッセージ履歴。
+        このクラスは、`table_name`という名前のDynamoDBテーブルと、
+        `SessionId`というパーティションキーが存在することを想定しています。
 
-    Args:
-        table_name: name of the DynamoDB table
-        session_id: arbitrary key that is used to store the messages
-            of a single chat session.
+        引数:
+            table_name: DynamoDBテーブルの名前
+            session_id: 1つのチャットセッションのメッセージを保存するために使用される任意のキー。
     """
 
     def __init__(self, table_name: str, session_id: str):
@@ -34,7 +33,7 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
 
     @property
     def messages(self) -> List[BaseMessage]:  # type: ignore
-        """Retrieve the messages from DynamoDB"""
+        """DynamoDBからメッセージを取得する"""
         from botocore.exceptions import ClientError
 
         try:
@@ -60,7 +59,7 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
         self.append(AIMessage(content=message))
 
     def append(self, message: BaseMessage) -> None:
-        """Append the message to the record in DynamoDB"""
+        """DynamoDBのレコードにメッセージを追加する"""
         from botocore.exceptions import ClientError
 
         messages = messages_to_dict(self.messages)
@@ -75,7 +74,7 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
             logger.error(err)
 
     def clear(self) -> None:
-        """Clear session memory from DynamoDB"""
+        """DynamoDBからセッションメモリを消去する"""
         from botocore.exceptions import ClientError
 
         try:

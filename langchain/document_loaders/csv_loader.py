@@ -6,23 +6,25 @@ from langchain.document_loaders.base import BaseLoader
 
 
 class CSVLoader(BaseLoader):
-    """CSVファイルをドキュメントのリストに読み込みます。
+    """Loads a CSV file into a list of documents.
 
-        各ドキュメントはCSVファイルの1行を表します。各行はキー/値のペアに変換され、
-        ドキュメントのpage_contentの新しい行に出力されます。
+    Each document represents one row of the CSV file. Every row is converted into a
+    key/value pair and outputted to a new line in the document's page_content.
 
-        デフォルトでは、csvから読み込まれた各ドキュメントのソースは、
-        `file_path`引数の値に設定されます。
-        これを上書きするには、`source_column`引数をCSVファイルの列名に設定します。
-        その後、各ドキュメントのソースは、`source_column`で指定された名前の列の値に設定されます。
+    The source for each document loaded from csv is set to the value of the
+    `file_path` argument for all doucments by default.
+    You can override this by setting the `source_column` argument to the
+    name of a column in the CSV file.
+    The source of each document will then be set to the value of the column
+    with the name specified in `source_column`.
 
-        出力例:
-            .. code-block:: txt
+    Output Example:
+        .. code-block:: txt
 
-                column1: value1
-                column2: value2
-                column3: value3
-        """
+            column1: value1
+            column2: value2
+            column3: value3
+    """
 
     def __init__(
         self,
@@ -37,7 +39,7 @@ class CSVLoader(BaseLoader):
         self.csv_args = csv_args or {}
 
     def load(self) -> List[Document]:
-        """ドキュメントオブジェクトへデータを読み込む"""
+        """Load data into document objects."""
 
         docs = []
         with open(self.file_path, newline="", encoding=self.encoding) as csvfile:

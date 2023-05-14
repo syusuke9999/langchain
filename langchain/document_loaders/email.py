@@ -1,4 +1,4 @@
-"""メールファイルを読み込むローダーです"""
+"""Loader that loads email files."""
 import os
 from typing import List
 
@@ -11,7 +11,7 @@ from langchain.document_loaders.unstructured import (
 
 
 class UnstructuredEmailLoader(UnstructuredFileLoader):
-    """メールファイルの読み込みにunstructuredを使用するローダーです。"""
+    """Loader that uses unstructured to load email files."""
 
     def _get_elements(self) -> List:
         from unstructured.file_utils.filetype import FileType, detect_filetype

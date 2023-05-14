@@ -2,12 +2,12 @@ Agents
 =============
 
 .. note::
-   `概念に関するガイド <https://docs.langchain.com/docs/components/agents/agent>`_
+   `Conceptual Guide <https://docs.langchain.com/docs/components/agents/agent>`_
 
 
-この文書では、エージェントがどのようなツールで使用されるかに関わらず、さまざまなタイプのエージェントを取り上げています。
+In this part of the documentation we cover the different types of agents, disregarding which specific tools they are used with.
 
-異なるタイプのエージェントの高レベルな概要については、以下のドキュメントを参照してください。
+For a high level overview of the different types of agents, see the below documentation.
 
 .. toctree::
    :maxdepth: 1
@@ -15,7 +15,7 @@ Agents
 
    ./agents/agent_types.md
 
-カスタムエージェントの作成方法に関するドキュメントは、以下をご参照ください。
+For documentation on how to create a custom agent, see the below.
 
 
 .. toctree::
@@ -29,7 +29,7 @@ Agents
    ./agents/custom_multi_action_agent.ipynb
    ./agents/custom_agent_with_tool_retrieval.ipynb
 
-また、各エージェントタイプを深く掘り下げるためのドキュメントも用意しています。
+We also have documentation for an in-depth dive into each agent type.
 
 .. toctree::
    :maxdepth: 1

@@ -45,8 +45,8 @@ class SerpAPIWrapper(BaseModel):
         default={
             "engine": "google",
             "google_domain": "google.com",
-            "gl": "us",
-            "hl": "en",
+            "gl": "jp",
+            "hl": "ja",
         }
     )
     serpapi_api_key: Optional[str] = None

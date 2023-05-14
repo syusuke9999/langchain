@@ -6,13 +6,13 @@ from langchain.schema import BaseRetriever, Document
 
 
 class LlamaIndexRetriever(BaseRetriever, BaseModel):
-    """LlamaIndex データ構造に対するソースからの質問への回答。"""
+    """Question-answering with sources over an LlamaIndex data structure."""
 
     index: Any
     query_kwargs: Dict = Field(default_factory=dict)
 
     def get_relevant_documents(self, query: str) -> List[Document]:
-        """クエリに関連するドキュメントを取得します。"""
+        """Get documents relevant for a query."""
         try:
             from llama_index.indices.base import BaseGPTIndex
             from llama_index.response.schema import Response
@@ -38,13 +38,13 @@ class LlamaIndexRetriever(BaseRetriever, BaseModel):
 
 
 class LlamaIndexGraphRetriever(BaseRetriever, BaseModel):
-    """LlamaIndexグラフデータ上のソースを用いた質問に対する回答。"""
+    """Question-answering with sources over an LlamaIndex graph data structure."""
 
     graph: Any
     query_configs: List[Dict] = Field(default_factory=list)
 
     def get_relevant_documents(self, query: str) -> List[Document]:
-        """クエリに関連するドキュメントを取得します。"""
+        """Get documents relevant for a query."""
         try:
             from llama_index.composability.graph import (
                 QUERY_CONFIG_TYPE,

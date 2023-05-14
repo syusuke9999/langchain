@@ -1,9 +1,9 @@
-# Getting Started
+# はじめに
 
-Tools are functions that agents can use to interact with the world.
-These tools can be generic utilities (e.g. search), other chains, or even other agents.
+ツールは、エージェントが世界と対話するために使用できる機能です。
+これらのツールは、汎用的なユーティリティ（例：検索）、他のチェーン、または他のエージェントであることがあります。
 
-Currently, tools can be loaded with the following snippet:
+現在、以下のスニペットでツールを読み込むことができます。
 
 ```python
 from langchain.agents import load_tools
@@ -11,8 +11,8 @@ tool_names = [...]
 tools = load_tools(tool_names)
 ```
 
-Some tools (e.g. chains, agents) may require a base LLM to use to initialize them.
-In that case, you can pass in an LLM as well:
+一部のツール（例：チェーン、エージェント）は、初期化するためにベースLLMが必要な場合があります。
+その場合は、LLMも渡すことができます。
 
 ```python
 from langchain.agents import load_tools
@@ -21,142 +21,142 @@ llm = ...
 tools = load_tools(tool_names, llm=llm)
 ```
 
-Below is a list of all supported tools and relevant information:
+以下は、すべてのサポートされているツールと関連情報のリストです。
 
-- Tool Name: The name the LLM refers to the tool by.
-- Tool Description: The description of the tool that is passed to the LLM.
-- Notes: Notes about the tool that are NOT passed to the LLM.
-- Requires LLM: Whether this tool requires an LLM to be initialized.
-- (Optional) Extra Parameters: What extra parameters are required to initialize this tool.
+- ツール名：LLMがツールを参照する名前。
+- ツールの説明：LLMに渡されるツールの説明。
+- ノート：LLMには渡されないツールに関するノート。
+- LLMが必要か：このツールを初期化するにはLLMが必要かどうか。
+- （オプション）追加のパラメータ：このツールの初期化に必要な追加のパラメータ。
 
-## List of Tools
+## ツールのリスト
 
 **python_repl**
 
-- Tool Name: Python REPL
-- Tool Description: A Python shell. Use this to execute python commands. Input should be a valid python command. If you expect output it should be printed out.
-- Notes: Maintains state.
-- Requires LLM: No
+- ツール名: Python REPL
+- ツールの説明：Pythonのシェルです。Pythonのコマンドを実行するためにこれを使用します。入力は有効なPythonコマンドである必要があります。出力が必要な場合は、それが表示されるようにしてください。
+- ノート：状態を保持します。
+- LLMが必要：いいえ
 
 **serpapi**
 
-- Tool Name: Search
-- Tool Description: A search engine. Useful for when you need to answer questions about current events. Input should be a search query.
-- Notes: Calls the Serp API and then parses results.
-- Requires LLM: No
+- ツール名: Search
+- ツールの説明：検索エンジンです。現在のイベントに関する質問に答える必要があるときに便利です。入力は検索クエリである必要があります。
+- ノート：Serp APIを呼び出してから結果を解析します。
+- LLMが必要：いいえ
 
 **wolfram-alpha**
 
-- Tool Name: Wolfram Alpha
-- Tool Description: A wolfram alpha search engine. Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life. Input should be a search query.
-- Notes: Calls the Wolfram Alpha API and then parses results.
-- Requires LLM: No
-- Extra Parameters: `wolfram_alpha_appid`: The Wolfram Alpha app id.
+- ツール名: Wolfram Alpha
+- ツールの説明：Wolfram Alphaの検索エンジンです。数学、科学、技術、文化、社会、日常生活に関する質問に答える必要がある場合に便利です。入力は検索クエリである必要があります。
+- ノート：Wolfram Alpha APIを呼び出してから結果を解析します。
+- LLMが必要：いいえ
+- 追加のパラメータ： `wolfram_alpha_appid`: Wolfram AlphaアプリのID。
 
 **requests**
 
-- Tool Name: Requests
-- Tool Description: A portal to the internet. Use this when you need to get specific content from a site. Input should be a specific url, and the output will be all the text on that page.
-- Notes: Uses the Python requests module.
-- Requires LLM: No
+- ツール名: Requests
+- ツールの説明：インターネットへのポータルです。特定のコンテンツをサイトから取得する必要があるときにこれを使用します。入力は特定のURLである必要があり、出力はそのページのすべてのテキストになります。
+- ノート：Pythonのrequestsモジュールを使用します。
+- LLMが必要：いいえ
 
 **terminal**
 
-- Tool Name: Terminal
-- Tool Description: Executes commands in a terminal. Input should be valid commands, and the output will be any output from running that command.
-- Notes: Executes commands with subprocess.
-- Requires LLM: No
+- ツール名: Terminal
+- ツールの説明：ターミナルでコマンドを実行します。入力は有効なコマンドであり、出力はそのコマンドを実行することで得られる出力です。
+- ノート：subprocessでコマンドを実行します。
+- LLMが必要：いいえ
 
 **pal-math**
 
-- Tool Name: PAL-MATH
-- Tool Description: A language model that is excellent at solving complex word math problems. Input should be a fully worded hard word math problem.
-- Notes: Based on [this paper](https://arxiv.org/pdf/2211.10435.pdf).
-- Requires LLM: Yes
+- ツール名: PAL-MATH
+- ツールの説明：複雑なワード数学問題を解決するのに優れた言語モデル。入力は、完全に記述された難しいワード算数問題である必要があります。
+- ノート：[この論文](https://arxiv.org/pdf/2211.10435.pdf)を基にしています。
+- LLMが必要：はい
 
 **pal-colored-objects**
 
-- Tool Name: PAL-COLOR-OBJ
-- Tool Description: A language model that is wonderful at reasoning about position and the color attributes of objects. Input should be a fully worded hard reasoning problem. Make sure to include all information about the objects AND the final question you want to answer.
-- Notes: Based on [this paper](https://arxiv.org/pdf/2211.10435.pdf).
-- Requires LLM: Yes
+- ツール名: PAL-COLOR-OBJ
+- ツールの説明：オブジェクトの位置と色属性についての推論が素晴らしい言語モデル。入力は、完全に記述された難しい推論問題である必要があります。オブジェクトのすべての情報と、答えたい最終問題を必ず含めてください。
+- ノート：[この論文](https://arxiv.org/pdf/2211.10435.pdf)を基にしています。
+- LLMが必要：はい
 
 **llm-math**
 
-- Tool Name: Calculator
-- Tool Description: Useful for when you need to answer questions about math.
-- Notes: An instance of the `LLMMath` chain.
-- Requires LLM: Yes
+- ツール名: Calculator
+- ツールの説明：数学に関する質問に答える必要がある場合に便利です。
+- ノート： `LLMMath`チェーンのインスタンス。
+- LLMが必要：はい
 
 **open-meteo-api**
 
-- Tool Name: Open Meteo API
-- Tool Description: Useful for when you want to get weather information from the OpenMeteo API. The input should be a question in natural language that this API can answer.
-- Notes: A natural language connection to the Open Meteo API (`https://api.open-meteo.com/`), specifically the `/v1/forecast` endpoint.
-- Requires LLM: Yes
+- ツール名: Open Meteo API
+- ツールの説明: OpenMeteo APIから天候情報を取得する際に便利です。入力は、このAPIが答えられる自然言語の質問である必要があります。
+- 備考: Open Meteo API (`https://api.open-meteo.com/`) の自然言語接続、特に `/v1/forecast` エンドポイント。
+- LLMが必要: はい
 
 **news-api**
 
-- Tool Name: News API
-- Tool Description: Use this when you want to get information about the top headlines of current news stories. The input should be a question in natural language that this API can answer.
-- Notes: A natural language connection to the News API (`https://newsapi.org`), specifically the `/v2/top-headlines` endpoint.
-- Requires LLM: Yes
-- Extra Parameters: `news_api_key` (your API key to access this endpoint)
+- ツール名: News API
+- ツールの説明: 現在のニュースのトップ見出しに関する情報を取得したい場合に使用します。入力は、このAPIが答えられる自然言語の質問である必要があります。
+- 備考: News API (`https://newsapi.org`) の自然言語接続、特に `/v2/top-headlines` エンドポイント。
+- LLMが必要: はい
+- 追加パラメータ: `news_api_key` (このエンドポイントにアクセスするためのAPIキー)
 
 **tmdb-api**
 
-- Tool Name: TMDB API
-- Tool Description: Useful for when you want to get information from The Movie Database. The input should be a question in natural language that this API can answer.
-- Notes: A natural language connection to the TMDB API (`https://api.themoviedb.org/3`), specifically the `/search/movie` endpoint.
-- Requires LLM: Yes
-- Extra Parameters: `tmdb_bearer_token` (your Bearer Token to access this endpoint - note that this is different from the API key)
+- ツール名: TMDB API
+- ツールの説明: The Movie Databaseから情報を取得したい場合に便利です。入力は、このAPIが答えられる自然言語の質問である必要があります。
+- 備考: TMDB API (`https://api.themoviedb.org/3`) の自然言語接続、特に `/search/movie` エンドポイント。
+- LLMが必要: はい
+- 追加パラメータ: `tmdb_bearer_token` (このエンドポイントにアクセスするためのBearerトークン - APIキーとは異なります)
 
 **google-search**
 
-- Tool Name: Search
-- Tool Description: A wrapper around Google Search. Useful for when you need to answer questions about current events. Input should be a search query.
-- Notes: Uses the Google Custom Search API
-- Requires LLM: No
-- Extra Parameters: `google_api_key`, `google_cse_id`
-- For more information on this, see [this page](../../../ecosystem/google_search.md)
+- ツール名: 検索
+- ツールの説明: Google検索のラッパーです。現在のイベントに関する質問に答える必要がある場合に便利です。入力は検索クエリであるべきです。
+- 備考: Google Custom Search APIを使用
+- LLMが必要: いいえ
+- 追加パラメータ: `google_api_key`, `google_cse_id`
+- このツールの詳細については、[このページ](../../../ecosystem/google_search.md)を参照してください
 
 **searx-search**
 
-- Tool Name: Search
-- Tool Description: A wrapper around SearxNG meta search engine. Input should be a search query. 
-- Notes: SearxNG is easy to deploy self-hosted. It is a good privacy friendly alternative to Google Search. Uses the SearxNG API. 
-- Requires LLM: No
-- Extra Parameters: `searx_host`
+- ツール名: 検索
+- ツールの説明: SearxNGメタ検索エンジンのラッパーです。入力は検索クエリであるべきです。
+- 備考: SearxNGは独自にデプロイが簡単です。プライバシーに優れたGoogle検索の代替手段です。SearxNG APIを使用。
+- LLMが必要: いいえ
+- 追加パラメータ: `searx_host`
 
 **google-serper**
 
-- Tool Name: Search
-- Tool Description: A low-cost Google Search API. Useful for when you need to answer questions about current events. Input should be a search query.
-- Notes: Calls the [serper.dev](https://serper.dev) Google Search API and then parses results.
-- Requires LLM: No
-- Extra Parameters: `serper_api_key`
-- For more information on this, see [this page](../../../ecosystem/google_serper.md)
+- ツール名: 検索
+- ツールの説明: 低コストのGoogle検索APIです。現在のイベントに関する質問に答える必要がある場合に便利です。入力は検索クエリであるべきです。
+- 備考: [serper.dev](https://serper.dev) のGoogle検索APIを呼び出し、結果を解析します。
+- LLMが必要: いいえ
+- 追加パラメータ: `serper_api_key`
+- このツールの詳細については、[このページ](../../../ecosystem/google_serper.md)を参照してください
 
 **wikipedia**
 
-- Tool Name: Wikipedia
-- Tool Description: A wrapper around Wikipedia. Useful for when you need to answer general questions about people, places, companies, historical events, or other subjects. Input should be a search query.
-- Notes: Uses the [wikipedia](https://pypi.org/project/wikipedia/) Python package to call the MediaWiki API and then parses results.
-- Requires LLM: No
-- Extra Parameters: `top_k_results`
+- ツール名: ウィキペディア
+- ツールの説明: ウィキペディアのラッパーです。人物、場所、企業、歴史的出来事、その他の主題に関する一般的な質問に答える必要がある場合に便利です。入力は検索クエリであるべきです。
+- 備考: MediaWiki APIを呼び出し、結果を解析するために[wikipedia](https://pypi.org/project/wikipedia/) Pythonパッケージを使用。
+- LLMが必要: いいえ
+- 追加パラメータ: `top_k_results`
 
 **podcast-api**
 
-- Tool Name: Podcast API
-- Tool Description: Use the Listen Notes Podcast API to search all podcasts or episodes. The input should be a question in natural language that this API can answer.
-- Notes: A natural language connection to the Listen Notes Podcast API (`https://www.PodcastAPI.com`), specifically the `/search/` endpoint.
-- Requires LLM: Yes
-- Extra Parameters: `listen_api_key` (your api key to access this endpoint)
+- ツール名: Podcast API
+- ツールの説明: Listen Notes Podcast APIを使ってすべてのポッドキャストやエピソードを検索します。入力は、このAPIが答えられる自然言語の質問である必要があります。
+- 備考: Listen Notes Podcast API (`https://www.PodcastAPI.com`) の自然言語接続、特に `/search/` エンドポイント。
+- LLMが必要: はい
+- 追加パラメータ: `listen_api_key` (このエンドポイントにアクセスするためのAPIキー)
 
 **openweathermap-api**
 
-- Tool Name: OpenWeatherMap
-- Tool Description: A wrapper around OpenWeatherMap API. Useful for fetching current weather information for a specified location. Input should be a location string (e.g. 'London,GB').
-- Notes: A connection to the OpenWeatherMap API (https://api.openweathermap.org), specifically the `/data/2.5/weather` endpoint.
-- Requires LLM: No
-- Extra Parameters: `openweathermap_api_key` (your API key to access this endpoint)
+- ツール名: OpenWeatherMap
+- ツールの説明: OpenWeatherMap APIをラップするツール。指定された場所の現在の天気情報を取得するのに便利です。入力はロケーション文字列（例: 'London,GB'）である必要があります。
+- 注意: OpenWeatherMap API（https://api.openweathermap.org）に接続し、特に`/data/2.5/weather` エンドポイントを利用します。
+- LLMが必要: いいえ
+- 追加パラメータ: `openweathermap_api_key`（このエンドポイントにアクセスするためのAPIキー）

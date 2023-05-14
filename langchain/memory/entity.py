@@ -68,10 +68,9 @@ class InMemoryEntityStore(BaseEntityStore):
 
 
 class RedisEntityStore(BaseEntityStore):
-    """Redis-backed Entity store. Entities get a TTL of 1 day by default, and
-    that TTL is extended by 3 days every time the entity is read back.
+    """Redisをバックエンドとしたエンティティストアです。 エンティティはデフォルトで1日のTTL（Time to Live）が設定さ れており、
+    エンティティが読み返されるたびにTTLは3日間ずつ延長されます。
     """
-
     redis_client: Any
     session_id: str = "default"
     key_prefix: str = "memory_store"
@@ -79,14 +78,14 @@ class RedisEntityStore(BaseEntityStore):
     recall_ttl: Optional[int] = 60 * 60 * 24 * 3
 
     def __init__(
-        self,
-        session_id: str = "default",
-        url: str = "redis://localhost:6379/0",
-        key_prefix: str = "memory_store",
-        ttl: Optional[int] = 60 * 60 * 24,
-        recall_ttl: Optional[int] = 60 * 60 * 24 * 3,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            session_id: str = "default",
+            url: str = "redis://localhost:6379/0",
+            key_prefix: str = "memory_store",
+            ttl: Optional[int] = 60 * 60 * 24,
+            recall_ttl: Optional[int] = 60 * 60 * 24 * 3,
+            *args: Any,
+            **kwargs: Any,
     ):
         try:
             import redis
@@ -114,9 +113,9 @@ class RedisEntityStore(BaseEntityStore):
 
     def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
         res = (
-            self.redis_client.getex(f"{self.full_key_prefix}:{key}", ex=self.recall_ttl)
-            or default
-            or ""
+                self.redis_client.getex(f"{self.full_key_prefix}:{key}", ex=self.recall_ttl)
+                or default
+                or ""
         )
         logger.debug(f"REDIS MEM get '{self.full_key_prefix}:{key}': '{res}'")
         return res
@@ -143,16 +142,16 @@ class RedisEntityStore(BaseEntityStore):
                 yield batch
 
         for keybatch in batched(
-            self.redis_client.scan_iter(f"{self.full_key_prefix}:*"), 500
+                self.redis_client.scan_iter(f"{self.full_key_prefix}:*"), 500
         ):
             self.redis_client.delete(*keybatch)
 
 
 class ConversationEntityMemory(BaseChatMemory):
-    """Entity extractor & summarizer to memory."""
+    """エンティティ抽出機能とメモリへの要約機能"""
 
-    human_prefix: str = "Human"
-    ai_prefix: str = "AI"
+    human_prefix: str = "ユーザー"
+    ai_prefix: str = "アシスタント"
     llm: BaseLanguageModel
     entity_extraction_prompt: BasePromptTemplate = ENTITY_EXTRACTION_PROMPT
     entity_summarization_prompt: BasePromptTemplate = ENTITY_SUMMARIZATION_PROMPT
@@ -167,21 +166,21 @@ class ConversationEntityMemory(BaseChatMemory):
 
     @property
     def memory_variables(self) -> List[str]:
-        """Will always return list of memory variables.
+        """常にメモリ変数のリストを返します。
 
-        :meta private:
+                :meta private:
         """
         return ["entities", self.chat_history_key]
 
     def load_memory_variables(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        """Return history buffer."""
+        """ヒストリーバッファを返す"""
         chain = LLMChain(llm=self.llm, prompt=self.entity_extraction_prompt)
         if self.input_key is None:
             prompt_input_key = get_prompt_input_key(inputs, self.memory_variables)
         else:
             prompt_input_key = self.input_key
         buffer_string = get_buffer_string(
-            self.buffer[-self.k * 2 :],
+            self.buffer[-self.k * 2:],
             human_prefix=self.human_prefix,
             ai_prefix=self.ai_prefix,
         )
@@ -198,7 +197,7 @@ class ConversationEntityMemory(BaseChatMemory):
             entity_summaries[entity] = self.entity_store.get(entity, "")
         self.entity_cache = entities
         if self.return_messages:
-            buffer: Any = self.buffer[-self.k * 2 :]
+            buffer: Any = self.buffer[-self.k * 2:]
         else:
             buffer = buffer_string
         return {
@@ -207,7 +206,10 @@ class ConversationEntityMemory(BaseChatMemory):
         }
 
     def save_context(self, inputs: Dict[str, Any], outputs: Dict[str, str]) -> None:
-        """Save context from this conversation to buffer."""
+        """
+        Save context from this conversation to buffer.
+        この会話からのコンテキストをバッファーに保存します。
+        """
         super().save_context(inputs, outputs)
 
         if self.input_key is None:
@@ -216,7 +218,7 @@ class ConversationEntityMemory(BaseChatMemory):
             prompt_input_key = self.input_key
 
         buffer_string = get_buffer_string(
-            self.buffer[-self.k * 2 :],
+            self.buffer[-self.k * 2:],
             human_prefix=self.human_prefix,
             ai_prefix=self.ai_prefix,
         )
@@ -234,7 +236,7 @@ class ConversationEntityMemory(BaseChatMemory):
             self.entity_store.set(entity, output.strip())
 
     def clear(self) -> None:
-        """Clear memory contents."""
+        """メモリの内容を消去する。"""
         self.chat_memory.clear()
         self.entity_cache.clear()
         self.entity_store.clear()

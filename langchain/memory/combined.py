@@ -6,10 +6,16 @@ from langchain.schema import BaseMemory
 
 
 class CombinedMemory(BaseMemory):
-    """Class for combining multiple memories' data together."""
+    """
+    Class for combining multiple memories' data together.
+    複数のメモリのデータを結合するためのクラス
+    """
 
     memories: List[BaseMemory]
-    """For tracking all the memories that should be accessed."""
+    """
+    For tracking all the memories that should be accessed.
+    アクセスされるべきすべてのメモリを追跡するため。
+    """
 
     @validator("memories")
     def check_repeated_memory_variable(
@@ -29,8 +35,14 @@ class CombinedMemory(BaseMemory):
 
     @property
     def memory_variables(self) -> List[str]:
-        """All the memory variables that this instance provides."""
-        """Collected from the all the linked memories."""
+        """
+        All the memory variables that this instance provides.
+        このインスタンスが提供するすべてのメモリ変数。
+        """
+        """
+        Collected from the all the linked memories.
+        リンクされたすべてのメモリから収集されたものです。
+        """
 
         memory_variables = []
 
@@ -40,7 +52,10 @@ class CombinedMemory(BaseMemory):
         return memory_variables
 
     def load_memory_variables(self, inputs: Dict[str, Any]) -> Dict[str, str]:
-        """Load all vars from sub-memories."""
+        """
+        Load all vars from sub-memories.
+        サブメモリから全てのvarをロードする。
+        """
         memory_data: Dict[str, Any] = {}
 
         # Collect vars from all sub-memories
@@ -54,12 +69,18 @@ class CombinedMemory(BaseMemory):
         return memory_data
 
     def save_context(self, inputs: Dict[str, Any], outputs: Dict[str, str]) -> None:
-        """Save context from this session for every memory."""
-        # Save context for all sub-memories
+        """
+        Save context from this session for every memory.
+        このセッションで得られたコンテキストを、すべてのメモリのために保存します。
+        """
+        # すべてのサブメモリーのコンテキストを保存する
         for memory in self.memories:
             memory.save_context(inputs, outputs)
 
     def clear(self) -> None:
-        """Clear context from this session for every memory."""
+        """
+        Clear context from this session for every memory.
+        このセッションのコンテキストを、すべてのメモリに対して消去します。
+        """
         for memory in self.memories:
             memory.clear()

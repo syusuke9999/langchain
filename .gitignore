@@ -151,13 +151,9 @@ wandb/
 data_map*
 \[('_type', 'fake'), ('stop', None)]
 
-GPT-4-with-Google.py
-REAMDE.md
 requirements.txt
 *.patch
 agent.py
 remove-api-key.txt
-bfg-1.14.0.jar
-docs/modules/agents/getting_started.ipynb
-langchain/agents/chat/prompt.py
+bfg.jar
 secret-patterns.txt

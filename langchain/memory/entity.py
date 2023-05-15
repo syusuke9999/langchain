@@ -22,32 +22,50 @@ logger = logging.getLogger(__name__)
 class BaseEntityStore(ABC):
     @abstractmethod
     def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
-        """Get entity value from store."""
+        """
+        Get entity value from store.
+        ストアからエンティティの値を取得する。
+        """
         pass
 
     @abstractmethod
     def set(self, key: str, value: Optional[str]) -> None:
-        """Set entity value in store."""
+        """
+        Set entity value in store.
+        ストアにエンティティの値を設定する。
+        """
         pass
 
     @abstractmethod
     def delete(self, key: str) -> None:
-        """Delete entity value from store."""
+        """
+        Delete entity value from store.
+        ストアからエンティティーの値を削除する。
+        """
         pass
 
     @abstractmethod
     def exists(self, key: str) -> bool:
-        """Check if entity exists in store."""
+        """
+        Check if entity exists in store.
+        ストアにエンティティが存在するかどうかをチェックする。
+        """
         pass
 
     @abstractmethod
     def clear(self) -> None:
-        """Delete all entities from store."""
+        """
+        Delete all entities from store.
+        ストアからすべてのエンティティを削除する
+        """
         pass
 
 
 class InMemoryEntityStore(BaseEntityStore):
-    """Basic in-memory entity store."""
+    """
+    Basic in-memory entity store.
+    基本的なインメモリ型エンティティ・ストア
+    """
 
     store: Dict[str, Optional[str]] = {}
 
@@ -68,7 +86,7 @@ class InMemoryEntityStore(BaseEntityStore):
 
 
 class RedisEntityStore(BaseEntityStore):
-    """Redisをバックエンドとしたエンティティストアです。 エンティティはデフォルトで1日のTTL（Time to Live）が設定さ れており、
+    """Redisをバックエンドとしたエンティティストアです。 エンティティはデフォルトで1日のTTL（Time to Live）が設定されており、
     エンティティが読み返されるたびにTTLは3日間ずつ延長されます。
     """
     redis_client: Any
@@ -78,14 +96,14 @@ class RedisEntityStore(BaseEntityStore):
     recall_ttl: Optional[int] = 60 * 60 * 24 * 3
 
     def __init__(
-        self,
-        session_id: str = "default",
-        url: str = "redis://localhost:6379/0",
-        key_prefix: str = "memory_store",
-        ttl: Optional[int] = 60 * 60 * 24,
-        recall_ttl: Optional[int] = 60 * 60 * 24 * 3,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            session_id: str = "default",
+            url: str = "redis://localhost:6379/0",
+            key_prefix: str = "memory_store",
+            ttl: Optional[int] = 60 * 60 * 24,
+            recall_ttl: Optional[int] = 60 * 60 * 24 * 3,
+            *args: Any,
+            **kwargs: Any,
     ):
         try:
             import redis
@@ -113,9 +131,9 @@ class RedisEntityStore(BaseEntityStore):
 
     def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
         res = (
-            self.redis_client.getex(f"{self.full_key_prefix}:{key}", ex=self.recall_ttl)
-            or default
-            or ""
+                self.redis_client.getex(f"{self.full_key_prefix}:{key}", ex=self.recall_ttl)
+                or default
+                or ""
         )
         logger.debug(f"REDIS MEM get '{self.full_key_prefix}:{key}': '{res}'")
         return res
@@ -136,6 +154,7 @@ class RedisEntityStore(BaseEntityStore):
 
     def clear(self) -> None:
         # iterate a list in batches of size batch_size
+        # リストをbatch_sizeのバッチで反復処理する
         def batched(iterable: Iterable[Any], batch_size: int) -> Iterable[Any]:
             iterator = iter(iterable)
             while batch := list(islice(iterator, batch_size)):
@@ -180,7 +199,7 @@ class ConversationEntityMemory(BaseChatMemory):
         else:
             prompt_input_key = self.input_key
         buffer_string = get_buffer_string(
-            self.buffer[-self.k * 2 :],
+            self.buffer[-self.k * 2:],
             human_prefix=self.human_prefix,
             ai_prefix=self.ai_prefix,
         )
@@ -197,7 +216,7 @@ class ConversationEntityMemory(BaseChatMemory):
             entity_summaries[entity] = self.entity_store.get(entity, "")
         self.entity_cache = entities
         if self.return_messages:
-            buffer: Any = self.buffer[-self.k * 2 :]
+            buffer: Any = self.buffer[-self.k * 2:]
         else:
             buffer = buffer_string
         return {
@@ -218,7 +237,7 @@ class ConversationEntityMemory(BaseChatMemory):
             prompt_input_key = self.input_key
 
         buffer_string = get_buffer_string(
-            self.buffer[-self.k * 2 :],
+            self.buffer[-self.k * 2:],
             human_prefix=self.human_prefix,
             ai_prefix=self.ai_prefix,
         )

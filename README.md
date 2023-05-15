@@ -1,6 +1,6 @@
 # 🦜️🔗 LangChain
 
-⚡ 組み立て可能性を活かしたLLMを使ったアプリケーション構築 ⚡
+⚡ 組み立て可能性を活かしたLLMを使ったアプリケーションの構築 ⚡
 
 [![lint](https://github.com/hwchase17/langchain/actions/workflows/lint.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/lint.yml)
 [![test](https://github.com/hwchase17/langchain/actions/workflows/test.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/test.yml)

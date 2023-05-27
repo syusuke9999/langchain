@@ -1,4 +1,4 @@
-"""グラフ操作のためのNetworkxラッパー"""
+"""Networkx wrapper for graph operations."""
 from __future__ import annotations
 
 from typing import Any, List, NamedTuple, Optional, Tuple
@@ -7,7 +7,7 @@ KG_TRIPLE_DELIMITER = "<|>"
 
 
 class KnowledgeTriple(NamedTuple):
-    """グラフの中のトリプル"""
+    """A triple in the graph."""
 
     subject: str
     predicate: str
@@ -15,7 +15,7 @@ class KnowledgeTriple(NamedTuple):
 
     @classmethod
     def from_string(cls, triple_string: str) -> "KnowledgeTriple":
-        """文字列からKnowledgeTripleを作成します。"""
+        """Create a KnowledgeTriple from a string."""
         subject, predicate, object_ = triple_string.strip().split(", ")
         subject = subject[1:]
         object_ = object_[:-1]
@@ -23,7 +23,7 @@ class KnowledgeTriple(NamedTuple):
 
 
 def parse_triples(knowledge_str: str) -> List[KnowledgeTriple]:
-    """知識文字列から知識トリプルを解析します"""
+    """Parse knowledge triples from the knowledge string."""
     knowledge_str = knowledge_str.strip()
     if not knowledge_str or knowledge_str == "NONE":
         return []
@@ -47,14 +47,14 @@ def get_entities(entity_str: str) -> List[str]:
 
 
 class NetworkxEntityGraph:
-    """エンティティグラフ操作用のNetworkxラッパー"""
+    """Networkx wrapper for entity graph operations."""
 
     def __init__(self, graph: Optional[Any] = None) -> None:
         """Create a new graph."""
         try:
             import networkx as nx
         except ImportError:
-            raise ValueError(
+            raise ImportError(
                 "Could not import networkx python package. "
                 "Please install it with `pip install networkx`."
             )
@@ -70,7 +70,7 @@ class NetworkxEntityGraph:
         try:
             import networkx as nx
         except ImportError:
-            raise ValueError(
+            raise ImportError(
                 "Could not import networkx python package. "
                 "Please install it with `pip install networkx`."
             )
@@ -78,9 +78,9 @@ class NetworkxEntityGraph:
         return cls(graph)
 
     def add_triple(self, knowledge_triple: KnowledgeTriple) -> None:
-        """グラフにトリプルを追加します"""
-        # ノードが存在しない場合、ノードを作成する
-        # 既存のエッジを上書きする
+        """Add a triple to the graph."""
+        # Creates nodes if they don't exist
+        # Overwrites existing edges
         if not self._graph.has_node(knowledge_triple.subject):
             self._graph.add_node(knowledge_triple.subject)
         if not self._graph.has_node(knowledge_triple.object_):

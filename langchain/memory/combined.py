@@ -1,21 +1,17 @@
+import warnings
 from typing import Any, Dict, List, Set
 
 from pydantic import validator
 
+from langchain.memory.chat_memory import BaseChatMemory
 from langchain.schema import BaseMemory
 
 
 class CombinedMemory(BaseMemory):
-    """
-    Class for combining multiple memories' data together.
-    複数のメモリのデータを結合するためのクラス
-    """
+    """Class for combining multiple memories' data together."""
 
     memories: List[BaseMemory]
-    """
-    For tracking all the memories that should be accessed.
-    アクセスされるべきすべてのメモリを追跡するため。
-    """
+    """For tracking all the memories that should be accessed."""
 
     @validator("memories")
     def check_repeated_memory_variable(
@@ -33,16 +29,23 @@ class CombinedMemory(BaseMemory):
 
         return value
 
+    @validator("memories")
+    def check_input_key(cls, value: List[BaseMemory]) -> List[BaseMemory]:
+        """Check that if memories are of type BaseChatMemory that input keys exist."""
+        for val in value:
+            if isinstance(val, BaseChatMemory):
+                if val.input_key is None:
+                    warnings.warn(
+                        "When using CombinedMemory, "
+                        "input keys should be so the input is known. "
+                        f" Was not set on {val}"
+                    )
+        return value
+
     @property
     def memory_variables(self) -> List[str]:
-        """
-        All the memory variables that this instance provides.
-        このインスタンスが提供するすべてのメモリ変数。
-        """
-        """
-        Collected from the all the linked memories.
-        リンクされたすべてのメモリから収集されたものです。
-        """
+        """All the memory variables that this instance provides."""
+        """Collected from the all the linked memories."""
 
         memory_variables = []
 
@@ -52,10 +55,7 @@ class CombinedMemory(BaseMemory):
         return memory_variables
 
     def load_memory_variables(self, inputs: Dict[str, Any]) -> Dict[str, str]:
-        """
-        Load all vars from sub-memories.
-        サブメモリから全てのvarをロードする。
-        """
+        """Load all vars from sub-memories."""
         memory_data: Dict[str, Any] = {}
 
         # Collect vars from all sub-memories
@@ -69,18 +69,12 @@ class CombinedMemory(BaseMemory):
         return memory_data
 
     def save_context(self, inputs: Dict[str, Any], outputs: Dict[str, str]) -> None:
-        """
-        Save context from this session for every memory.
-        このセッションで得られたコンテキストを、すべてのメモリのために保存します。
-        """
-        # すべてのサブメモリーのコンテキストを保存する
+        """Save context from this session for every memory."""
+        # Save context for all sub-memories
         for memory in self.memories:
             memory.save_context(inputs, outputs)
 
     def clear(self) -> None:
-        """
-        Clear context from this session for every memory.
-        このセッションのコンテキストを、すべてのメモリに対して消去します。
-        """
+        """Clear context from this session for every memory."""
         for memory in self.memories:
             memory.clear()

@@ -23,8 +23,7 @@ ENTITY_MEMORY_CONVERSATION_TEMPLATE = PromptTemplate(
     template=_DEFAULT_ENTITY_MEMORY_CONVERSATION_TEMPLATE,
 )
 
-_DEFAULT_SUMMARIZER_TEMPLATE = """Progressively summarize the lines of conversation provided, adding onto the 
-previous summary returning a new summary.
+_DEFAULT_SUMMARIZER_TEMPLATE = """Progressively summarize the lines of conversation provided, adding onto the previous summary returning a new summary.
 
 EXAMPLE
 Current summary:

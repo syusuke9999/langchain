@@ -21,18 +21,17 @@ class RedisChatMessageHistory(BaseChatMessageHistory):
         url: str = "redis://localhost:6379/0",
         key_prefix: str = "message_store:",
         ttl: Optional[int] = None,
-        password: Optional[str] = None,
     ):
         try:
             import redis
         except ImportError:
-            raise ValueError(
+            raise ImportError(
                 "Could not import redis python package. "
                 "Please install it with `pip install redis`."
             )
 
         try:
-            self.redis_client = redis.StrictRedis.from_url(url=url, password=password)
+            self.redis_client = redis.Redis.from_url(url=url)
         except redis.exceptions.ConnectionError as error:
             logger.error(error)
 

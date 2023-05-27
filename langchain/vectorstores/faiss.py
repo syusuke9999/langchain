@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import os
 import pickle
 import uuid
 from pathlib import Path
@@ -17,10 +18,24 @@ from langchain.vectorstores.base import VectorStore
 from langchain.vectorstores.utils import maximal_marginal_relevance
 
 
-def dependable_faiss_import() -> Any:
-    """Import faiss if available, otherwise raise error."""
+def dependable_faiss_import(no_avx2: Optional[bool] = None) -> Any:
+    """
+    Import faiss if available, otherwise raise error.
+    If FAISS_NO_AVX2 environment variable is set, it will be considered
+    to load FAISS with no AVX2 optimization.
+
+    Args:
+        no_avx2: Load FAISS strictly with no AVX2 optimization
+            so that the vectorstore is portable and compatible with other devices.
+    """
+    if no_avx2 is None and "FAISS_NO_AVX2" in os.environ:
+        no_avx2 = bool(os.getenv("FAISS_NO_AVX2"))
+
     try:
-        import faiss
+        if no_avx2:
+            from faiss import swigfaiss as faiss
+        else:
+            import faiss
     except ImportError:
         raise ValueError(
             "Could not import faiss python package. "
@@ -45,15 +60,15 @@ def _default_relevance_score_fn(score: float) -> float:
 
 
 class FAISS(VectorStore):
-    """FAISSベクトルデータベースをラップするクラス。
+    """Wrapper around FAISS vector database.
 
-        使い方: ``faiss`` pythonパッケージがインストールされていること。
+    To use, you should have the ``faiss`` python package installed.
 
-        例:
-            .. code-block:: python
+    Example:
+        .. code-block:: python
 
-                from langchain import FAISS
-                faiss = FAISS(embedding_function, index, docstore, index_to_docstore_id)
+            from langchain import FAISS
+            faiss = FAISS(embedding_function, index, docstore, index_to_docstore_id)
 
     """
 
@@ -66,6 +81,7 @@ class FAISS(VectorStore):
         relevance_score_fn: Optional[
             Callable[[float], float]
         ] = _default_relevance_score_fn,
+        normalize_L2: bool = False,
     ):
         """Initialize with necessary components."""
         self.embedding_function = embedding_function
@@ -73,12 +89,14 @@ class FAISS(VectorStore):
         self.docstore = docstore
         self.index_to_docstore_id = index_to_docstore_id
         self.relevance_score_fn = relevance_score_fn
+        self._normalize_L2 = normalize_L2
 
     def __add(
         self,
         texts: Iterable[str],
         embeddings: Iterable[List[float]],
         metadatas: Optional[List[dict]] = None,
+        ids: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
         if not isinstance(self.docstore, AddableMixin):
@@ -90,14 +108,17 @@ class FAISS(VectorStore):
         for i, text in enumerate(texts):
             metadata = metadatas[i] if metadatas else {}
             documents.append(Document(page_content=text, metadata=metadata))
+        if ids is None:
+            ids = [str(uuid.uuid4()) for _ in texts]
         # Add to the index, the index_to_id mapping, and the docstore.
         starting_len = len(self.index_to_docstore_id)
-        self.index.add(np.array(embeddings, dtype=np.float32))
+        faiss = dependable_faiss_import()
+        vector = np.array(embeddings, dtype=np.float32)
+        if self._normalize_L2:
+            faiss.normalize_L2(vector)
+        self.index.add(vector)
         # Get list of index, id, and docs.
-        full_info = [
-            (starting_len + i, str(uuid.uuid4()), doc)
-            for i, doc in enumerate(documents)
-        ]
+        full_info = [(starting_len + i, ids[i], doc) for i, doc in enumerate(documents)]
         # Add information to docstore and index.
         self.docstore.add({_id: doc for _, _id, doc in full_info})
         index_to_id = {index: _id for index, _id, _ in full_info}
@@ -108,14 +129,18 @@ class FAISS(VectorStore):
         self,
         texts: Iterable[str],
         metadatas: Optional[List[dict]] = None,
+        ids: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
-        """ベクトルストアにさらにテキストを埋め込み、追加します。
-                引数:
-                    texts: ベクトルストアに追加する文字列のイテラブル。
-                    metadata: テキストに関連付けられたメタデータのオプションのリスト。
-                戻り値:
-                    ベクトルストアにテキストを追加することで得られるIDのリスト。
+        """Run more texts through the embeddings and add to the vectorstore.
+
+        Args:
+            texts: Iterable of strings to add to the vectorstore.
+            metadatas: Optional list of metadatas associated with the texts.
+            ids: Optional list of unique IDs.
+
+        Returns:
+            List of ids from adding the texts into the vectorstore.
         """
         if not isinstance(self.docstore, AddableMixin):
             raise ValueError(
@@ -124,22 +149,25 @@ class FAISS(VectorStore):
             )
         # Embed and create the documents.
         embeddings = [self.embedding_function(text) for text in texts]
-        return self.__add(texts, embeddings, metadatas, **kwargs)
+        return self.__add(texts, embeddings, metadatas=metadatas, ids=ids, **kwargs)
 
     def add_embeddings(
         self,
         text_embeddings: Iterable[Tuple[str, List[float]]],
         metadatas: Optional[List[dict]] = None,
+        ids: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> List[str]:
-        """ベクトルストアに追加するために、より多くのテキストを埋め込みに通す。
+        """Run more texts through the embeddings and add to the vectorstore.
 
-                引数:
-                    text_embeddings: ベクトルストアに追加するための文字列と埋め込みのイテラブルなペア。
-                    metadata: テキストに関連付けられたメタデータのオプションのリスト。
+        Args:
+            text_embeddings: Iterable pairs of string and embedding to
+                add to the vectorstore.
+            metadatas: Optional list of metadatas associated with the texts.
+            ids: Optional list of unique IDs.
 
-                戻り値:
-                    ベクトルストアにテキストを追加することで得られるIDのリスト。
+        Returns:
+            List of ids from adding the texts into the vectorstore.
         """
         if not isinstance(self.docstore, AddableMixin):
             raise ValueError(
@@ -150,21 +178,25 @@ class FAISS(VectorStore):
 
         texts = [te[0] for te in text_embeddings]
         embeddings = [te[1] for te in text_embeddings]
-        return self.__add(texts, embeddings, metadatas, **kwargs)
+        return self.__add(texts, embeddings, metadatas=metadatas, ids=ids, **kwargs)
 
     def similarity_search_with_score_by_vector(
         self, embedding: List[float], k: int = 4
     ) -> List[Tuple[Document, float]]:
-        """クエリに最も類似したドキュメントを返す。
+        """Return docs most similar to query.
 
-                引数:
-                    query: 類似したドキュメントを検索するためのテキスト。
-                    k: 返すドキュメントの数。デフォルトは4。
+        Args:
+            embedding: Embedding vector to look up documents similar to.
+            k: Number of Documents to return. Defaults to 4.
 
-                戻り値:
-                    クエリに最も類似したドキュメントのリストとそれぞれのスコア
+        Returns:
+            List of Documents most similar to the query and score for each
         """
-        scores, indices = self.index.search(np.array([embedding], dtype=np.float32), k)
+        faiss = dependable_faiss_import()
+        vector = np.array([embedding], dtype=np.float32)
+        if self._normalize_L2:
+            faiss.normalize_L2(vector)
+        scores, indices = self.index.search(vector, k)
         docs = []
         for j, i in enumerate(indices[0]):
             if i == -1:
@@ -180,14 +212,14 @@ class FAISS(VectorStore):
     def similarity_search_with_score(
         self, query: str, k: int = 4
     ) -> List[Tuple[Document, float]]:
-        """クエリに最も類似したドキュメントを返す。
+        """Return docs most similar to query.
 
-                引数:
-                    query: 類似したドキュメントを検索するためのテキスト。
-                    k: 返すドキュメントの数。デフォルトは4。
+        Args:
+            query: Text to look up documents similar to.
+            k: Number of Documents to return. Defaults to 4.
 
-                戻り値:
-                    クエリに最も類似したドキュメントのリストとそれぞれのスコア
+        Returns:
+            List of Documents most similar to the query and score for each
         """
         embedding = self.embedding_function(query)
         docs = self.similarity_search_with_score_by_vector(embedding, k)
@@ -196,14 +228,14 @@ class FAISS(VectorStore):
     def similarity_search_by_vector(
         self, embedding: List[float], k: int = 4, **kwargs: Any
     ) -> List[Document]:
-        """埋め込みベクトルに最も類似したドキュメントを返します。
+        """Return docs most similar to embedding vector.
 
-                引数:
-                    embedding: 類似したドキュメントを検索するための埋め込み。
-                    k: 返すドキュメントの数。デフォルトは4。
+        Args:
+            embedding: Embedding to look up documents similar to.
+            k: Number of Documents to return. Defaults to 4.
 
-                戻り値:
-                    埋め込みに最も類似したドキュメントのリスト。
+        Returns:
+            List of Documents most similar to the embedding.
         """
         docs_and_scores = self.similarity_search_with_score_by_vector(embedding, k)
         return [doc for doc, _ in docs_and_scores]
@@ -211,14 +243,14 @@ class FAISS(VectorStore):
     def similarity_search(
         self, query: str, k: int = 4, **kwargs: Any
     ) -> List[Document]:
-        """クエリに最も類似したドキュメントを返す。
+        """Return docs most similar to query.
 
-                引数:
-                    query: 類似したドキュメントを検索するためのテキスト。
-                    k: 返すドキュメントの数。デフォルトは4。
+        Args:
+            query: Text to look up documents similar to.
+            k: Number of Documents to return. Defaults to 4.
 
-                戻り値:
-                    クエリに最も類似したドキュメントのリスト。
+        Returns:
+            List of Documents most similar to the query.
         """
         docs_and_scores = self.similarity_search_with_score(query, k)
         return [doc for doc, _ in docs_and_scores]
@@ -231,19 +263,21 @@ class FAISS(VectorStore):
         lambda_mult: float = 0.5,
         **kwargs: Any,
     ) -> List[Document]:
-        """最大限のマージナル関連性を使用して選択されたドキュメントを返します。
+        """Return docs selected using the maximal marginal relevance.
 
-                最大限のマージナル関連性は、クエリとの類似性と選択されたドキュメント間の多様性を最適化します。
+        Maximal marginal relevance optimizes for similarity to query AND diversity
+        among selected documents.
 
-                引数:
-                    embedding: 類似するドキュメントを検索するための埋め込み。
-                    k: 返すドキュメントの数。デフォルトは4。
-                    fetch_k: MMRアルゴリズムに渡すために取得するドキュメントの数。
-                    lambda_mult: 0から1の間の数で、結果の多様性の程度を決定します。
-                                0は最大の多様性、1は最小の多様性に対応します。
-                                デフォルトは0.5。
-                戻り値:
-                    最大限のマージナル関連性によって選択されたドキュメントのリスト。
+        Args:
+            embedding: Embedding to look up documents similar to.
+            k: Number of Documents to return. Defaults to 4.
+            fetch_k: Number of Documents to fetch to pass to MMR algorithm.
+            lambda_mult: Number between 0 and 1 that determines the degree
+                        of diversity among the results with 0 corresponding
+                        to maximum diversity and 1 to minimum diversity.
+                        Defaults to 0.5.
+        Returns:
+            List of Documents selected by maximal marginal relevance.
         """
         _, indices = self.index.search(np.array([embedding], dtype=np.float32), fetch_k)
         # -1 happens when not enough docs are returned.
@@ -275,19 +309,21 @@ class FAISS(VectorStore):
         lambda_mult: float = 0.5,
         **kwargs: Any,
     ) -> List[Document]:
-        """最大限のマージナル関連性を使用して選択されたドキュメントを返します。
+        """Return docs selected using the maximal marginal relevance.
 
-                最大限のマージナル関連性は、クエリとの類似性と選択されたドキュメント間の多様性を最適化します。
+        Maximal marginal relevance optimizes for similarity to query AND diversity
+        among selected documents.
 
-                引数:
-                    query: 類似するドキュメントを検索するためのテキスト。
-                    k: 返すドキュメントの数。デフォルトは4。
-                    fetch_k: MMRアルゴリズムに渡すために取得するドキュメントの数。
-                    lambda_mult: 0から1の間の数で、結果の多様性の程度を決定します。
-                                0は最大の多様性、1は最小の多様性に対応します。
-                                デフォルトは0.5。
-                戻り値:
-                    最大限のマージナル関連性によって選択されたドキュメントのリスト。
+        Args:
+            query: Text to look up documents similar to.
+            k: Number of Documents to return. Defaults to 4.
+            fetch_k: Number of Documents to fetch to pass to MMR algorithm.
+            lambda_mult: Number between 0 and 1 that determines the degree
+                        of diversity among the results with 0 corresponding
+                        to maximum diversity and 1 to minimum diversity.
+                        Defaults to 0.5.
+        Returns:
+            List of Documents selected by maximal marginal relevance.
         """
         embedding = self.embedding_function(query)
         docs = self.max_marginal_relevance_search_by_vector(
@@ -296,15 +332,15 @@ class FAISS(VectorStore):
         return docs
 
     def merge_from(self, target: FAISS) -> None:
-        """現在のFAISSオブジェクトに別のFAISSオブジェクトをマージします。
+        """Merge another FAISS object with the current one.
 
-                対象のFAISSを現在のものに追加します。
+        Add the target FAISS to the current one.
 
-                Args:
-                    target: 現在のものにマージしたいFAISSオブジェクト
+        Args:
+            target: FAISS object you wish to merge into the current one
 
-                Returns:
-                    なし。
+        Returns:
+            None.
         """
         if not isinstance(self.docstore, AddableMixin):
             raise ValueError("Cannot merge with this type of docstore")
@@ -314,13 +350,13 @@ class FAISS(VectorStore):
         # Merge two IndexFlatL2
         self.index.merge_from(target.index)
 
-        # Create new id for docs from target FAISS object
+        # Get id and docs from target FAISS object
         full_info = []
-        for i in target.index_to_docstore_id:
-            doc = target.docstore.search(target.index_to_docstore_id[i])
+        for i, target_id in target.index_to_docstore_id.items():
+            doc = target.docstore.search(target_id)
             if not isinstance(doc, Document):
                 raise ValueError("Document should be returned")
-            full_info.append((starting_len + i, str(uuid.uuid4()), doc))
+            full_info.append((starting_len + i, target_id, doc))
 
         # Add information to docstore and index_to_docstore_id.
         self.docstore.add({_id: doc for _, _id, doc in full_info})
@@ -334,20 +370,32 @@ class FAISS(VectorStore):
         embeddings: List[List[float]],
         embedding: Embeddings,
         metadatas: Optional[List[dict]] = None,
+        ids: Optional[List[str]] = None,
+        normalize_L2: bool = False,
         **kwargs: Any,
     ) -> FAISS:
         faiss = dependable_faiss_import()
         index = faiss.IndexFlatL2(len(embeddings[0]))
-        index.add(np.array(embeddings, dtype=np.float32))
+        vector = np.array(embeddings, dtype=np.float32)
+        if normalize_L2:
+            faiss.normalize_L2(vector)
+        index.add(vector)
         documents = []
+        if ids is None:
+            ids = [str(uuid.uuid4()) for _ in texts]
         for i, text in enumerate(texts):
             metadata = metadatas[i] if metadatas else {}
             documents.append(Document(page_content=text, metadata=metadata))
-        index_to_id = {i: str(uuid.uuid4()) for i in range(len(documents))}
-        docstore = InMemoryDocstore(
-            {index_to_id[i]: doc for i, doc in enumerate(documents)}
+        index_to_id = dict(enumerate(ids))
+        docstore = InMemoryDocstore(dict(zip(index_to_id.values(), documents)))
+        return cls(
+            embedding.embed_query,
+            index,
+            docstore,
+            index_to_id,
+            normalize_L2=normalize_L2,
+            **kwargs,
         )
-        return cls(embedding.embed_query, index, docstore, index_to_id, **kwargs)
 
     @classmethod
     def from_texts(
@@ -355,31 +403,33 @@ class FAISS(VectorStore):
         texts: List[str],
         embedding: Embeddings,
         metadatas: Optional[List[dict]] = None,
+        ids: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> FAISS:
-        """生のドキュメントからFAISSラッパーを構築します。
+        """Construct FAISS wrapper from raw documents.
 
-                これは、ユーザーフレンドリーなインターフェースで、次のことができます。
-                    1. ドキュメントを埋め込む。
-                    2. メモリ内のdocstoreを作成する
-                    3. FAISSデータベースを初期化する
+        This is a user friendly interface that:
+            1. Embeds documents.
+            2. Creates an in memory docstore
+            3. Initializes the FAISS database
 
-                これは、すぐに始めるための簡単な方法です。
+        This is intended to be a quick way to get started.
 
-                例：
-                    .. code-block:: python
+        Example:
+            .. code-block:: python
 
-                        from langchain import FAISS
-                        from langchain.embeddings import OpenAIEmbeddings
-                        embeddings = OpenAIEmbeddings()
-                        faiss = FAISS.from_texts(texts, embeddings)
+                from langchain import FAISS
+                from langchain.embeddings import OpenAIEmbeddings
+                embeddings = OpenAIEmbeddings()
+                faiss = FAISS.from_texts(texts, embeddings)
         """
         embeddings = embedding.embed_documents(texts)
         return cls.__from(
             texts,
             embeddings,
             embedding,
-            metadatas,
+            metadatas=metadatas,
+            ids=ids,
             **kwargs,
         )
 
@@ -388,27 +438,28 @@ class FAISS(VectorStore):
         cls,
         text_embeddings: List[Tuple[str, List[float]]],
         embedding: Embeddings,
-        metadata: Optional[List[dict]] = None,
+        metadatas: Optional[List[dict]] = None,
+        ids: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> FAISS:
-        """生のドキュメントからFAISSラッパーを構築します。
+        """Construct FAISS wrapper from raw documents.
 
-                これは、次のようなユーザーフレンドリーなインターフェースです。
-                    1. ドキュメントを埋め込む。
-                    2. インメモリーのdocstoreを作成する
-                    3. FAISSデータベースを初期化する
+        This is a user friendly interface that:
+            1. Embeds documents.
+            2. Creates an in memory docstore
+            3. Initializes the FAISS database
 
-                これは、手っ取り早く始められる事を意図しています。
+        This is intended to be a quick way to get started.
 
-                例：
-                    .. code-block:: python
+        Example:
+            .. code-block:: python
 
-                        from langchain import FAISS
-                        from langchain.embeddings import OpenAIEmbeddings
-                        embeddings = OpenAIEmbeddings()
-                        text_embeddings = embeddings.embed_documents(texts)
-                        text_embedding_pairs = list(zip(texts, text_embeddings))
-                        faiss = FAISS.from_embeddings(text_embedding_pairs, embeddings)
+                from langchain import FAISS
+                from langchain.embeddings import OpenAIEmbeddings
+                embeddings = OpenAIEmbeddings()
+                text_embeddings = embeddings.embed_documents(texts)
+                text_embedding_pairs = list(zip(texts, text_embeddings))
+                faiss = FAISS.from_embeddings(text_embedding_pairs, embeddings)
         """
         texts = [t[0] for t in text_embeddings]
         embeddings = [t[1] for t in text_embeddings]
@@ -416,17 +467,18 @@ class FAISS(VectorStore):
             texts,
             embeddings,
             embedding,
-            metadata,
+            metadatas=metadatas,
+            ids=ids,
             **kwargs,
         )
 
     def save_local(self, folder_path: str, index_name: str = "index") -> None:
-        """FAISSインデックス、docstore、index_to_docstore_idをディスクに保存する。
+        """Save FAISS index, docstore, and index_to_docstore_id to disk.
 
-                引数:
-                    folder_path: インデックス、docstore、
-                                index_to_docstore_idを保存するフォルダのパス。
-                    index_name: インデックスファイル名を指定して保存する場合
+        Args:
+            folder_path: folder path to save index, docstore,
+                and index_to_docstore_id to.
+            index_name: for saving with a specific index file name
         """
         path = Path(folder_path)
         path.mkdir(exist_ok=True, parents=True)
@@ -437,7 +489,7 @@ class FAISS(VectorStore):
             self.index, str(path / "{index_name}.faiss".format(index_name=index_name))
         )
 
-        # docstore と index_to_docstore_id を保存する
+        # save docstore and index_to_docstore_id
         with open(path / "{index_name}.pkl".format(index_name=index_name), "wb") as f:
             pickle.dump((self.docstore, self.index_to_docstore_id), f)
 
@@ -445,13 +497,13 @@ class FAISS(VectorStore):
     def load_local(
         cls, folder_path: str, embeddings: Embeddings, index_name: str = "index"
     ) -> FAISS:
-        """FAISSインデックス、docstore、index_to_docstore_idをディスクに読み込む。
+        """Load FAISS index, docstore, and index_to_docstore_id to disk.
 
-                引数:
-                    folder_path: インデックス、docstore、index_to_docstore_id
-                                　の読み込み元となるフォルダーパス
-                    embeddings: クエリ生成時に使用する埋め込み
-                    index_name: 特定のインデックスファイル名で保存する場合
+        Args:
+            folder_path: folder path to load index, docstore,
+                and index_to_docstore_id from.
+            embeddings: Embeddings to use when generating queries
+            index_name: for saving with a specific index file name
         """
         path = Path(folder_path)
         # load index separately since it is not picklable
@@ -460,7 +512,7 @@ class FAISS(VectorStore):
             str(path / "{index_name}.faiss".format(index_name=index_name))
         )
 
-        # docstoreとindex_to_docstore_idを読み込む
+        # load docstore and index_to_docstore_id
         with open(path / "{index_name}.pkl".format(index_name=index_name), "rb") as f:
             docstore, index_to_docstore_id = pickle.load(f)
         return cls(embeddings.embed_query, index, docstore, index_to_docstore_id)
@@ -471,10 +523,7 @@ class FAISS(VectorStore):
         k: int = 4,
         **kwargs: Any,
     ) -> List[Tuple[Document, float]]:
-        """
-        Return docs and their similarity scores on a scale from 0 to 1.
-        docsとその類似度スコアを0から1のスケールで返します。
-        """
+        """Return docs and their similarity scores on a scale from 0 to 1."""
         if self.relevance_score_fn is None:
             raise ValueError(
                 "normalize_score_fn must be provided to"

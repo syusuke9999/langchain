@@ -1,4 +1,5 @@
-"""Chain that takes in an input and produces an action and action input."""
+"""入力を受け入れて、アクションとアクション入力を生成するチェーン"""
+
 from __future__ import annotations
 
 import asyncio
@@ -43,11 +44,11 @@ logger = logging.getLogger(__name__)
 
 
 class BaseSingleActionAgent(BaseModel):
-    """Base Agent class."""
+    """基本エージェントクラス"""
 
     @property
     def return_values(self) -> List[str]:
-        """Return values of the agent."""
+        """エージェントの返値"""
         return ["output"]
 
     def get_allowed_tools(self) -> Optional[List[str]]:
@@ -55,57 +56,56 @@ class BaseSingleActionAgent(BaseModel):
 
     @abstractmethod
     def plan(
-        self,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
+            self,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            callbacks: Callbacks = None,
+            **kwargs: Any,
     ) -> Union[AgentAction, AgentFinish]:
-        """Given input, decided what to do.
+        """ 入力に基づいて、何をするかを決定します。
 
-        Args:
-            intermediate_steps: Steps the LLM has taken to date,
-                along with observations
-            callbacks: Callbacks to run.
-            **kwargs: User inputs.
+            引数:
+                intermediate_steps: これまでにLLMが行ったステップと、
+                    観察された内容
+                callbacks: 実行するコールバック。
+                **kwargs: ユーザーからの入力。
 
-        Returns:
-            Action specifying what tool to use.
+            戻り値:
+                使用するツールを指定するアクション。
         """
 
     @abstractmethod
     async def aplan(
-        self,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
+            self,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            callbacks: Callbacks = None,
+            **kwargs: Any,
     ) -> Union[AgentAction, AgentFinish]:
-        """Given input, decided what to do.
+        """入力に基づいて何をすべきかを決定します。
 
-        Args:
-            intermediate_steps: Steps the LLM has taken to date,
-                along with observations
-            callbacks: Callbacks to run.
-            **kwargs: User inputs.
+                引数:
+                    intermediate_steps: これまでにLLMが踏んだステップと、観測結果
+                    callbacks: 実行するコールバック。
+                    **kwargs: ユーザーの入力。
 
-        Returns:
-            Action specifying what tool to use.
+                戻り値:
+                    使用するツールを指定したアクション。
         """
 
     @property
     @abstractmethod
     def input_keys(self) -> List[str]:
-        """Return the input keys.
+        """入力キーを返します。
 
-        :meta private:
+                :meta private:
         """
 
     def return_stopped_response(
-        self,
-        early_stopping_method: str,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        **kwargs: Any,
+            self,
+            early_stopping_method: str,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            **kwargs: Any,
     ) -> AgentFinish:
-        """Return response when agent has been stopped due to max iterations."""
+        """エージェントが最大反復回数により停止した際のレスポンスを返します。"""
         if early_stopping_method == "force":
             # `force` just returns a constant string
             return AgentFinish(
@@ -118,21 +118,21 @@ class BaseSingleActionAgent(BaseModel):
 
     @classmethod
     def from_llm_and_tools(
-        cls,
-        llm: BaseLanguageModel,
-        tools: Sequence[BaseTool],
-        callback_manager: Optional[BaseCallbackManager] = None,
-        **kwargs: Any,
+            cls,
+            llm: BaseLanguageModel,
+            tools: Sequence[BaseTool],
+            callback_manager: Optional[BaseCallbackManager] = None,
+            **kwargs: Any,
     ) -> BaseSingleActionAgent:
         raise NotImplementedError
 
     @property
     def _agent_type(self) -> str:
-        """Return Identifier of agent type."""
+        """戻り値 エージェント種別の識別子"""
         raise NotImplementedError
 
     def dict(self, **kwargs: Any) -> Dict:
-        """Return dictionary representation of agent."""
+        """エージェントの辞書表現を返します"""
         _dict = super().dict()
         _type = self._agent_type
         if isinstance(_type, AgentType):
@@ -142,16 +142,16 @@ class BaseSingleActionAgent(BaseModel):
         return _dict
 
     def save(self, file_path: Union[Path, str]) -> None:
-        """Save the agent.
+        """エージェントを保存する。
 
-        Args:
-            file_path: Path to file to save the agent to.
+                引数:
+                    file_path: エージェントを保存するファイルへのパス。
 
-        Example:
-        .. code-block:: python
+                例:
+                .. code-block:: python
 
-            # If working with agent executor
-            agent.agent.save(file_path="path/agent.yaml")
+                    # エージェント実行者と一緒に作業している場合
+                    agent.agent.save(file_path="path/agent.yaml")
         """
         # Convert file to Path object.
         if isinstance(file_path, str):
@@ -179,11 +179,11 @@ class BaseSingleActionAgent(BaseModel):
 
 
 class BaseMultiActionAgent(BaseModel):
-    """Base Agent class."""
+    """基本エージェントクラス"""
 
     @property
     def return_values(self) -> List[str]:
-        """Return values of the agent."""
+        """エージェントの戻り値"""
         return ["output"]
 
     def get_allowed_tools(self) -> Optional[List[str]]:
@@ -191,40 +191,39 @@ class BaseMultiActionAgent(BaseModel):
 
     @abstractmethod
     def plan(
-        self,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
+            self,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            callbacks: Callbacks = None,
+            **kwargs: Any,
     ) -> Union[List[AgentAction], AgentFinish]:
-        """Given input, decided what to do.
+        """入力に基づいて何をするかを決定します。
 
-        Args:
-            intermediate_steps: Steps the LLM has taken to date,
-                along with observations
-            callbacks: Callbacks to run.
-            **kwargs: User inputs.
+                引数:
+                    intermediate_steps: これまでにLLMが行ったステップと観測値
+                    callbacks: 実行するコールバック
+                    **kwargs: ユーザー入力
 
-        Returns:
-            Actions specifying what tool to use.
+                戻り値:
+                    使用するツールを指定するアクション
         """
 
     @abstractmethod
     async def aplan(
-        self,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
+            self,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            callbacks: Callbacks = None,
+            **kwargs: Any,
     ) -> Union[List[AgentAction], AgentFinish]:
-        """Given input, decided what to do.
+        """入力に基づいて何をするかを決定します。
 
-        Args:
-            intermediate_steps: Steps the LLM has taken to date,
-                along with observations
-            callbacks: Callbacks to run.
-            **kwargs: User inputs.
+                引数:
+                    intermediate_steps: これまでにLLMが行ったステップと、
+                        観察結果
+                    callbacks: 実行するコールバック。
+                    **kwargs: ユーザー入力。
 
-        Returns:
-            Actions specifying what tool to use.
+                戻り値:
+                    使用するツールを指定するアクション。
         """
 
     @property
@@ -236,12 +235,12 @@ class BaseMultiActionAgent(BaseModel):
         """
 
     def return_stopped_response(
-        self,
-        early_stopping_method: str,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        **kwargs: Any,
+            self,
+            early_stopping_method: str,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            **kwargs: Any,
     ) -> AgentFinish:
-        """Return response when agent has been stopped due to max iterations."""
+        """反復回数が最大に達してエージェントが停止した場合に、応答を返します"""
         if early_stopping_method == "force":
             # `force` just returns a constant string
             return AgentFinish({"output": "Agent stopped due to max iterations."}, "")
@@ -252,25 +251,25 @@ class BaseMultiActionAgent(BaseModel):
 
     @property
     def _agent_type(self) -> str:
-        """Return Identifier of agent type."""
+        """戻り値 エージェント種別の識別子"""
         raise NotImplementedError
 
     def dict(self, **kwargs: Any) -> Dict:
-        """Return dictionary representation of agent."""
+        """エージェントの辞書的表現を返します"""
         _dict = super().dict()
         _dict["_type"] = str(self._agent_type)
         return _dict
 
     def save(self, file_path: Union[Path, str]) -> None:
-        """Save the agent.
+        """エージェントを保存する。
 
-        Args:
-            file_path: Path to file to save the agent to.
+        引数:
+            file_path: エージェントを保存するファイルへのパス。
 
-        Example:
+        例:
         .. code-block:: python
 
-            # If working with agent executor
+            # エージェント実行者と一緒に作業している場合
             agent.agent.save(file_path="path/agent.yaml")
         """
         # Convert file to Path object.
@@ -301,7 +300,7 @@ class BaseMultiActionAgent(BaseModel):
 class AgentOutputParser(BaseOutputParser):
     @abstractmethod
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
-        """Parse text into agent action/finish."""
+        """テキストをエージェントの動作/終了にパースします"""
 
 
 class LLMSingleActionAgent(BaseSingleActionAgent):
@@ -314,27 +313,27 @@ class LLMSingleActionAgent(BaseSingleActionAgent):
         return list(set(self.llm_chain.input_keys) - {"intermediate_steps"})
 
     def dict(self, **kwargs: Any) -> Dict:
-        """Return dictionary representation of agent."""
+        """エージェントの辞書的表現を返します。"""
         _dict = super().dict()
         del _dict["output_parser"]
         return _dict
 
     def plan(
-        self,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
+            self,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            callbacks: Callbacks = None,
+            **kwargs: Any,
     ) -> Union[AgentAction, AgentFinish]:
-        """Given input, decided what to do.
+        """入力に基づいて、何をすべきかを決定します。
 
-        Args:
-            intermediate_steps: Steps the LLM has taken to date,
-                along with observations
-            callbacks: Callbacks to run.
-            **kwargs: User inputs.
+                引数:
+                    intermediate_steps: これまでにLLMが行ったステップと、
+                        観察結果
+                    callbacks: 実行するコールバック。
+                    **kwargs: ユーザー入力。
 
-        Returns:
-            Action specifying what tool to use.
+                戻り値:
+                    使用するツールを指定するアクション。
         """
         output = self.llm_chain.run(
             intermediate_steps=intermediate_steps,
@@ -345,21 +344,21 @@ class LLMSingleActionAgent(BaseSingleActionAgent):
         return self.output_parser.parse(output)
 
     async def aplan(
-        self,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
+            self,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            callbacks: Callbacks = None,
+            **kwargs: Any,
     ) -> Union[AgentAction, AgentFinish]:
-        """Given input, decided what to do.
+        """入力に基づいて、何をすべきかを決定します。
 
-        Args:
-            intermediate_steps: Steps the LLM has taken to date,
-                along with observations
-            callbacks: Callbacks to run.
-            **kwargs: User inputs.
+                引数:
+                    intermediate_steps: これまでにLLMが行ったステップと、
+                        観察結果
+                    callbacks: 実行するコールバック。
+                    **kwargs: ユーザー入力。
 
-        Returns:
-            Action specifying what tool to use.
+                戻り値:
+                    使用するツールを指定するアクション。
         """
         output = await self.llm_chain.arun(
             intermediate_steps=intermediate_steps,
@@ -377,11 +376,10 @@ class LLMSingleActionAgent(BaseSingleActionAgent):
 
 
 class Agent(BaseSingleActionAgent):
-    """Class responsible for calling the language model and deciding the action.
+    """言語モデルを呼び出し、アクションを決定するクラス。
 
-    This is driven by an LLMChain. The prompt in the LLMChain MUST include
-    a variable called "agent_scratchpad" where the agent can put its
-    intermediary work.
+        これはLLMChainによって駆動されます。LLMChainのプロンプトには、
+        エージェントが中間作業を行うための変数「agent_scratchpad」が含まれている必要があります。
     """
 
     llm_chain: LLMChain
@@ -389,7 +387,7 @@ class Agent(BaseSingleActionAgent):
     allowed_tools: Optional[List[str]] = None
 
     def dict(self, **kwargs: Any) -> Dict:
-        """Return dictionary representation of agent."""
+        """エージェントの辞書的表現を返します"""
         _dict = super().dict()
         del _dict["output_parser"]
         return _dict
@@ -413,9 +411,9 @@ class Agent(BaseSingleActionAgent):
         ]
 
     def _construct_scratchpad(
-        self, intermediate_steps: List[Tuple[AgentAction, str]]
+            self, intermediate_steps: List[Tuple[AgentAction, str]]
     ) -> Union[str, List[BaseMessage]]:
-        """Construct the scratchpad that lets the agent continue its thought process."""
+        """エージェントの思考プロセスを継続させるためのスクラッチパッドを構築します"""
         thoughts = ""
         for action, observation in intermediate_steps:
             thoughts += action.log
@@ -423,51 +421,51 @@ class Agent(BaseSingleActionAgent):
         return thoughts
 
     def plan(
-        self,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
+            self,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            callbacks: Callbacks = None,
+            **kwargs: Any,
     ) -> Union[AgentAction, AgentFinish]:
-        """Given input, decided what to do.
+        """入力に基づいて、何をすべきかを決定します。
 
-        Args:
-            intermediate_steps: Steps the LLM has taken to date,
-                along with observations
-            callbacks: Callbacks to run.
-            **kwargs: User inputs.
+                引数:
+                    intermediate_steps: これまでにLLMが行ったステップと、
+                        観察結果
+                    callbacks: 実行するコールバック。
+                    **kwargs: ユーザー入力。
 
-        Returns:
-            Action specifying what tool to use.
+                戻り値:
+                    使用するツールを指定するアクション。
         """
         full_inputs = self.get_full_inputs(intermediate_steps, **kwargs)
         full_output = self.llm_chain.predict(callbacks=callbacks, **full_inputs)
         return self.output_parser.parse(full_output)
 
     async def aplan(
-        self,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        callbacks: Callbacks = None,
-        **kwargs: Any,
+            self,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            callbacks: Callbacks = None,
+            **kwargs: Any,
     ) -> Union[AgentAction, AgentFinish]:
-        """Given input, decided what to do.
+        """入力に基づいて何をするかを決定します。
 
-        Args:
-            intermediate_steps: Steps the LLM has taken to date,
-                along with observations
-            callbacks: Callbacks to run.
-            **kwargs: User inputs.
+                引数:
+                    intermediate_steps: これまでにLLMが行ったステップと、
+                        観察結果
+                    callbacks: 実行するコールバック。
+                    **kwargs: ユーザー入力。
 
-        Returns:
-            Action specifying what tool to use.
+                戻り値:
+                    使用するツールを指定するアクション。
         """
         full_inputs = self.get_full_inputs(intermediate_steps, **kwargs)
         full_output = await self.llm_chain.apredict(callbacks=callbacks, **full_inputs)
         return self.output_parser.parse(full_output)
 
     def get_full_inputs(
-        self, intermediate_steps: List[Tuple[AgentAction, str]], **kwargs: Any
+            self, intermediate_steps: List[Tuple[AgentAction, str]], **kwargs: Any
     ) -> Dict[str, Any]:
-        """Create the full inputs for the LLMChain from intermediate steps."""
+        """中間ステップからLLMChainのフルインプットを作成します"""
         thoughts = self._construct_scratchpad(intermediate_steps)
         new_inputs = {"agent_scratchpad": thoughts, "stop": self._stop}
         full_inputs = {**kwargs, **new_inputs}
@@ -475,7 +473,7 @@ class Agent(BaseSingleActionAgent):
 
     @property
     def input_keys(self) -> List[str]:
-        """Return the input keys.
+        """入力キーを返します。
 
         :meta private:
         """
@@ -483,7 +481,7 @@ class Agent(BaseSingleActionAgent):
 
     @root_validator()
     def validate_prompt(cls, values: Dict) -> Dict:
-        """Validate that prompt matches format."""
+        """プロンプトがフォーマットと一致していることを確認します"""
         prompt = values["llm_chain"].prompt
         if "agent_scratchpad" not in prompt.input_variables:
             logger.warning(
@@ -502,38 +500,38 @@ class Agent(BaseSingleActionAgent):
     @property
     @abstractmethod
     def observation_prefix(self) -> str:
-        """Prefix to append the observation with."""
+        """観測結果を追記するための接頭辞"""
 
     @property
     @abstractmethod
     def llm_prefix(self) -> str:
-        """Prefix to append the LLM call with."""
+        """LLMコールに付け加える接頭辞"""
 
     @classmethod
     @abstractmethod
     def create_prompt(cls, tools: Sequence[BaseTool]) -> BasePromptTemplate:
-        """Create a prompt for this class."""
+        """このクラスのプロンプトを作成します"""
 
     @classmethod
     def _validate_tools(cls, tools: Sequence[BaseTool]) -> None:
-        """Validate that appropriate tools are passed in."""
+        """適切なツールが渡されていることを検証します"""
         pass
 
     @classmethod
     @abstractmethod
     def _get_default_output_parser(cls, **kwargs: Any) -> AgentOutputParser:
-        """Get default output parser for this class."""
+        """このクラスのデフォルトの出力パーサーを取得します"""
 
     @classmethod
     def from_llm_and_tools(
-        cls,
-        llm: BaseLanguageModel,
-        tools: Sequence[BaseTool],
-        callback_manager: Optional[BaseCallbackManager] = None,
-        output_parser: Optional[AgentOutputParser] = None,
-        **kwargs: Any,
+            cls,
+            llm: BaseLanguageModel,
+            tools: Sequence[BaseTool],
+            callback_manager: Optional[BaseCallbackManager] = None,
+            output_parser: Optional[AgentOutputParser] = None,
+            **kwargs: Any,
     ) -> Agent:
-        """Construct an agent from an LLM and tools."""
+        """LLMとツールからエージェントを作成します"""
         cls._validate_tools(tools)
         llm_chain = LLMChain(
             llm=llm,
@@ -550,40 +548,39 @@ class Agent(BaseSingleActionAgent):
         )
 
     def return_stopped_response(
-        self,
-        early_stopping_method: str,
-        intermediate_steps: List[Tuple[AgentAction, str]],
-        **kwargs: Any,
+            self,
+            early_stopping_method: str,
+            intermediate_steps: List[Tuple[AgentAction, str]],
+            **kwargs: Any,
     ) -> AgentFinish:
-        """Return response when agent has been stopped due to max iterations."""
+        """反復回数が上限に達したことにより、エージェントが停止した場合の応答を返します"""
         if early_stopping_method == "force":
             # `force` just returns a constant string
             return AgentFinish(
                 {"output": "Agent stopped due to iteration limit or time limit."}, ""
             )
         elif early_stopping_method == "generate":
-            # Generate does one final forward pass
+            # ジェネレートが最後のパスを決める
             thoughts = ""
             for action, observation in intermediate_steps:
                 thoughts += action.log
                 thoughts += (
                     f"\n{self.observation_prefix}{observation}\n{self.llm_prefix}"
                 )
-            # Adding to the previous steps, we now tell the LLM to make a final pred
+            # これまでのステップに加え、今度はLLMに最終的なプレッドを作るように指示します。
             thoughts += (
                 "\n\nI now need to return a final answer based on the previous steps:"
             )
             new_inputs = {"agent_scratchpad": thoughts, "stop": self._stop}
             full_inputs = {**kwargs, **new_inputs}
             full_output = self.llm_chain.predict(**full_inputs)
-            # We try to extract a final answer
+            # 最終的な答えを導き出そうとします
             parsed_output = self.output_parser.parse(full_output)
             if isinstance(parsed_output, AgentFinish):
-                # If we can extract, we send the correct stuff
+                # 抽出できるのであれば、正しいものを送ります
                 return parsed_output
             else:
-                # If we can extract, but the tool is not the final tool,
-                # we just return the full output
+                # もし抽出できても、そのツールが最終的なツールでないのなら出力されたものを返します
                 return AgentFinish({"output": full_output}, full_output)
         else:
             raise ValueError(
@@ -603,22 +600,22 @@ class ExceptionTool(BaseTool):
     description = "Exception tool"
 
     def _run(
-        self,
-        query: str,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
+            self,
+            query: str,
+            run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         return query
 
     async def _arun(
-        self,
-        query: str,
-        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
+            self,
+            query: str,
+            run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> str:
         return query
 
 
 class AgentExecutor(Chain):
-    """Consists of an agent using tools."""
+    """ツールを使用するエージェントで構成されています"""
 
     agent: Union[BaseSingleActionAgent, BaseMultiActionAgent]
     tools: Sequence[BaseTool]
@@ -632,20 +629,20 @@ class AgentExecutor(Chain):
 
     @classmethod
     def from_agent_and_tools(
-        cls,
-        agent: Union[BaseSingleActionAgent, BaseMultiActionAgent],
-        tools: Sequence[BaseTool],
-        callback_manager: Optional[BaseCallbackManager] = None,
-        **kwargs: Any,
+            cls,
+            agent: Union[BaseSingleActionAgent, BaseMultiActionAgent],
+            tools: Sequence[BaseTool],
+            callback_manager: Optional[BaseCallbackManager] = None,
+            **kwargs: Any,
     ) -> AgentExecutor:
-        """Create from agent and tools."""
+        """エージェントやツールから作成します"""
         return cls(
             agent=agent, tools=tools, callback_manager=callback_manager, **kwargs
         )
 
     @root_validator()
     def validate_tools(cls, values: Dict) -> Dict:
-        """Validate that tools are compatible with agent."""
+        """ツールがエージェントと互換性があることを確認します"""
         agent = values["agent"]
         tools = values["tools"]
         allowed_tools = agent.get_allowed_tools()
@@ -659,7 +656,7 @@ class AgentExecutor(Chain):
 
     @root_validator()
     def validate_return_direct_tool(cls, values: Dict) -> Dict:
-        """Validate that tools are compatible with agent."""
+        """ツールがエージェントと互換性があることを確認します"""
         agent = values["agent"]
         tools = values["tools"]
         if isinstance(agent, BaseMultiActionAgent):
@@ -672,7 +669,7 @@ class AgentExecutor(Chain):
         return values
 
     def save(self, file_path: Union[Path, str]) -> None:
-        """Raise error - saving not supported for Agent Executors."""
+        """Raise error - エージェント・エクゼキュータでは保存はサポートされていません。"""
         raise ValueError(
             "Saving not supported for agent executors. "
             "If you are trying to save the agent, please use the "
@@ -680,12 +677,12 @@ class AgentExecutor(Chain):
         )
 
     def save_agent(self, file_path: Union[Path, str]) -> None:
-        """Save the underlying agent."""
+        """基礎となるエージェントを保存します"""
         return self.agent.save(file_path)
 
     @property
     def input_keys(self) -> List[str]:
-        """Return the input keys.
+        """入力キーを返します。
 
         :meta private:
         """
@@ -693,7 +690,7 @@ class AgentExecutor(Chain):
 
     @property
     def output_keys(self) -> List[str]:
-        """Return the singular output key.
+        """単数形の出力キーを返します。
 
         :meta private:
         """
@@ -703,15 +700,15 @@ class AgentExecutor(Chain):
             return self.agent.return_values
 
     def lookup_tool(self, name: str) -> BaseTool:
-        """Lookup tool by name."""
+        """名前からツールを探します"""
         return {tool.name: tool for tool in self.tools}[name]
 
     def _should_continue(self, iterations: int, time_elapsed: float) -> bool:
         if self.max_iterations is not None and iterations >= self.max_iterations:
             return False
         if (
-            self.max_execution_time is not None
-            and time_elapsed >= self.max_execution_time
+                self.max_execution_time is not None
+                and time_elapsed >= self.max_execution_time
         ):
             return False
 
@@ -753,12 +750,12 @@ class AgentExecutor(Chain):
         intermediate_steps: List[Tuple[AgentAction, str]],
         run_manager: Optional[CallbackManagerForChainRun] = None,
     ) -> Union[AgentFinish, List[Tuple[AgentAction, str]]]:
-        """Take a single step in the thought-action-observation loop.
+        """思考-行動-観察ループで1ステップ進む。
 
-        Override this to take control of how the agent makes and acts on choices.
+        エージェントが選択肢を作成し、それに基づいて行動する方法を制御するために、これをオーバーライドしてください。
         """
         try:
-            # Call the LLM to see what to do.
+            # LLMをコールして、どうすればいいのか確認します。
             output = self.agent.plan(
                 intermediate_steps,
                 callbacks=run_manager.get_child() if run_manager else None,
@@ -806,7 +803,7 @@ class AgentExecutor(Chain):
         for agent_action in actions:
             if run_manager:
                 run_manager.on_agent_action(agent_action, color="green")
-            # Otherwise we lookup the tool
+            # それ以外の場合は、ツールを参照します
             if agent_action.tool in name_to_tool_map:
                 tool = name_to_tool_map[agent_action.tool]
                 return_direct = tool.return_direct
@@ -814,7 +811,7 @@ class AgentExecutor(Chain):
                 tool_run_kwargs = self.agent.tool_run_logging_kwargs()
                 if return_direct:
                     tool_run_kwargs["llm_prefix"] = ""
-                # We then call the tool on the tool input to get an observation
+                # 次に、ツール入力でツールをコールして、観測結果を取得します
                 observation = tool.run(
                     agent_action.tool_input,
                     verbose=self.verbose,
@@ -842,12 +839,12 @@ class AgentExecutor(Chain):
         intermediate_steps: List[Tuple[AgentAction, str]],
         run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
     ) -> Union[AgentFinish, List[Tuple[AgentAction, str]]]:
-        """Take a single step in the thought-action-observation loop.
+        """思考-行動-観察ループで1ステップを実行します。
 
-        Override this to take control of how the agent makes and acts on choices.
+        エージェントが選択肢を作成し、それに基づいて行動する方法を制御するために、これをオーバーライドしてください。
         """
         try:
-            # Call the LLM to see what to do.
+            # LLMをコールして、何をすればいいのか確認します。
             output = await self.agent.aplan(
                 intermediate_steps,
                 callbacks=run_manager.get_child() if run_manager else None,
@@ -879,7 +876,7 @@ class AgentExecutor(Chain):
                 **tool_run_kwargs,
             )
             return [(output, observation)]
-        # If the tool chosen is the finishing tool, then we end and return.
+        # 選んだツールがフィニッシングツールであれば、終了して帰ります。
         if isinstance(output, AgentFinish):
             return output
         actions: List[AgentAction]
@@ -895,7 +892,7 @@ class AgentExecutor(Chain):
                 await run_manager.on_agent_action(
                     agent_action, verbose=self.verbose, color="green"
                 )
-            # Otherwise we lookup the tool
+            # それ以外の場合は、ツールを探します
             if agent_action.tool in name_to_tool_map:
                 tool = name_to_tool_map[agent_action.tool]
                 return_direct = tool.return_direct
@@ -903,7 +900,7 @@ class AgentExecutor(Chain):
                 tool_run_kwargs = self.agent.tool_run_logging_kwargs()
                 if return_direct:
                     tool_run_kwargs["llm_prefix"] = ""
-                # We then call the tool on the tool input to get an observation
+                # 次に、ツール入力でツールをコールして、観察結果を取得します
                 observation = await tool.arun(
                     agent_action.tool_input,
                     verbose=self.verbose,
@@ -922,7 +919,7 @@ class AgentExecutor(Chain):
                 )
             return agent_action, observation
 
-        # Use asyncio.gather to run multiple tool.arun() calls concurrently
+        # asyncio.gatherを使用して、複数のtool.arun()呼び出しを同時に実行する
         result = await asyncio.gather(
             *[_aperform_agent_action(agent_action) for agent_action in actions]
         )
@@ -934,19 +931,19 @@ class AgentExecutor(Chain):
         inputs: Dict[str, str],
         run_manager: Optional[CallbackManagerForChainRun] = None,
     ) -> Dict[str, Any]:
-        """Run text through and get agent response."""
-        # Construct a mapping of tool name to tool for easy lookup
+        """テキストを通し、エージェントの反応を見ることができます。"""
+        # ツール名とツールの対応表を作成し、簡単に参照できるようにします
         name_to_tool_map = {tool.name: tool for tool in self.tools}
-        # We construct a mapping from each tool to a color, used for logging.
+        # 各ツールと色とのマッピングを構築し、ログを取るために使用します
         color_mapping = get_color_mapping(
             [tool.name for tool in self.tools], excluded_colors=["green"]
         )
         intermediate_steps: List[Tuple[AgentAction, str]] = []
-        # Let's start tracking the number of iterations and time elapsed
+        # 反復回数と経過時間の追跡を始めましょう
         iterations = 0
         time_elapsed = 0.0
         start_time = time.time()
-        # We now enter the agent loop (until it returns something).
+        # これでエージェントループに入りました（何かを返すまで）
         while self._should_continue(iterations, time_elapsed):
             next_step_output = self._take_next_step(
                 name_to_tool_map,
@@ -963,7 +960,7 @@ class AgentExecutor(Chain):
             intermediate_steps.extend(next_step_output)
             if len(next_step_output) == 1:
                 next_step_action = next_step_output[0]
-                # See if tool should return directly
+                # ツールがそのまま戻ってくるかどうかを確認
                 tool_return = self._get_tool_return(next_step_action)
                 if tool_return is not None:
                     return self._return(
@@ -981,19 +978,19 @@ class AgentExecutor(Chain):
         inputs: Dict[str, str],
         run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
     ) -> Dict[str, str]:
-        """Run text through and get agent response."""
-        # Construct a mapping of tool name to tool for easy lookup
+        """テキストを通し、エージェントの反応を見ることができます"""
+        # ツール名とツールのマッピングを構築し、簡単に参照できるようにします。
         name_to_tool_map = {tool.name: tool for tool in self.tools}
-        # We construct a mapping from each tool to a color, used for logging.
+        # 各ツールから色へのマッピングを構築し、ログを取る際に使用します。
         color_mapping = get_color_mapping(
             [tool.name for tool in self.tools], excluded_colors=["green"]
         )
         intermediate_steps: List[Tuple[AgentAction, str]] = []
-        # Let's start tracking the number of iterations and time elapsed
+        # 反復回数と経過時間の追跡を始めましょう
         iterations = 0
         time_elapsed = 0.0
         start_time = time.time()
-        # We now enter the agent loop (until it returns something).
+        # これでエージェントループに入りました（何かを返すまで）
         async with asyncio_timeout(self.max_execution_time):
             try:
                 while self._should_continue(iterations, time_elapsed):
@@ -1014,7 +1011,7 @@ class AgentExecutor(Chain):
                     intermediate_steps.extend(next_step_output)
                     if len(next_step_output) == 1:
                         next_step_action = next_step_output[0]
-                        # See if tool should return directly
+                        # ツールがそのまま戻ってくるかどうかを確認
                         tool_return = self._get_tool_return(next_step_action)
                         if tool_return is not None:
                             return await self._areturn(
@@ -1030,7 +1027,7 @@ class AgentExecutor(Chain):
                     output, intermediate_steps, run_manager=run_manager
                 )
             except TimeoutError:
-                # stop early when interrupted by the async timeout
+                # asyncのタイムアウトで中断された場合、早期に停止します。
                 output = self.agent.return_stopped_response(
                     self.early_stopping_method, intermediate_steps, **inputs
                 )
@@ -1041,10 +1038,10 @@ class AgentExecutor(Chain):
     def _get_tool_return(
         self, next_step_output: Tuple[AgentAction, str]
     ) -> Optional[AgentFinish]:
-        """Check if the tool is a returning tool."""
+        """そのツールが戻りツールであるかどうかを確認します"""
         agent_action, observation = next_step_output
         name_to_tool_map = {tool.name: tool for tool in self.tools}
-        # Invalid tools won't be in the map, so we return False.
+        # 無効なツールはマップに表示されないので、Falseを返します
         if agent_action.tool in name_to_tool_map:
             if name_to_tool_map[agent_action.tool].return_direct:
                 return AgentFinish(

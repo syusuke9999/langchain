@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from typing import List, Optional
 
 from langchain.schema import (
@@ -16,11 +17,13 @@ logger = logging.getLogger(__name__)
 
 class RedisChatMessageHistory(BaseChatMessageHistory):
     def __init__(
-        self,
-        session_id: str,
-        url: str = "redis://localhost:6379/0",
-        key_prefix: str = "message_store:",
-        ttl: Optional[int] = None,
+            self,
+            session_id: str,
+            key_prefix: str = "message_store:",
+            ttl: Optional[int] = None,
+            redis_server_url: Optional[str] = None,
+            redis_server_password: Optional[str] = None,
+            redis_port_number: Optional[int] = 0,
     ):
         try:
             import redis
@@ -29,6 +32,14 @@ class RedisChatMessageHistory(BaseChatMessageHistory):
                 "Could not import redis python package. "
                 "Please install it with `pip install redis`."
             )
+
+        # Get password, host, and port from environment variables or use the provided ones
+        password = os.getenv('REDIS_PASSWORD', redis_server_password)
+        host = os.getenv('REDIS_HOST', redis_server_url)
+        port = os.getenv('REDIS_PORT', redis_port_number)
+
+        # Construct the url
+        url = f"redis://:{password}@{host}:{port}"
 
         try:
             self.redis_client = redis.Redis.from_url(url=url)

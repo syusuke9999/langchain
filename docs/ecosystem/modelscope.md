@@ -1,20 +1,21 @@
-# ModelScope
+# ModelScope（モデルスコープ）
 
-This page covers how to use the modelscope ecosystem within LangChain.
-It is broken into two parts: installation and setup, and then references to specific modelscope wrappers.
+このページでは、LangChain内でModelScopeエコシステムを使用する方法について説明します。
+インストールとセットアップ、そして特定のModelScopeラッパーへの参照の2つの部分に分かれています。
 
-## Installation and Setup
+## インストールとセットアップ
 
-* Install the Python SDK with `pip install modelscope`
+* Python SDKを`pip install modelscope`でインストールします。
 
-## Wrappers
+## ラッパー
 
-### Embeddings
+### 埋め込み
 
-There exists a modelscope Embeddings wrapper, which you can access with 
+Modelscopeの埋め込みラッパーが存在し、以下のようにアクセスできます。
 
 ```python
 from langchain.embeddings import ModelScopeEmbeddings
 ```
 
-For a more detailed walkthrough of this, see [this notebook](../modules/models/text_embedding/examples/modelscope_hub.ipynb)
+これに関する詳細なウォークスルーは、
+[このノートブック](../modules/models/text_embedding/examples/modelscope_hub.ipynb)を参照してください。

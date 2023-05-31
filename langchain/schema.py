@@ -18,7 +18,7 @@ from pydantic import BaseModel, Extra, Field, root_validator
 
 
 def get_buffer_string(
-    messages: List[BaseMessage], human_prefix: str = "Human", ai_prefix: str = "AI"
+        messages: List[BaseMessage], human_prefix: str = "Human", ai_prefix: str = "AI"
 ) -> str:
     """Get buffer string of messages."""
     string_messages = []
@@ -370,11 +370,11 @@ class OutputParserException(ValueError):
     """
 
     def __init__(
-        self,
-        error: Any,
-        observation: str | None = None,
-        llm_output: str | None = None,
-        send_to_llm: bool = False,
+            self,
+            error: Any,
+            observation: str | None = None,
+            llm_output: str | None = None,
+            send_to_llm: bool = False,
     ):
         super(OutputParserException, self).__init__(error)
         if send_to_llm:
@@ -393,12 +393,12 @@ class BaseDocumentTransformer(ABC):
 
     @abstractmethod
     def transform_documents(
-        self, documents: Sequence[Document], **kwargs: Any
+            self, documents: Sequence[Document], **kwargs: Any
     ) -> Sequence[Document]:
         """Transform a list of documents."""
 
     @abstractmethod
     async def atransform_documents(
-        self, documents: Sequence[Document], **kwargs: Any
+            self, documents: Sequence[Document], **kwargs: Any
     ) -> Sequence[Document]:
         """Asynchronously transform a list of documents."""

@@ -109,7 +109,6 @@ ENTITY_SUMMARIZATION_PROMPT = PromptTemplate(
     template=_DEFAULT_ENTITY_SUMMARIZATION_TEMPLATE,
 )
 
-
 KG_TRIPLE_DELIMITER = "<|>"
 _DEFAULT_KNOWLEDGE_TRIPLE_EXTRACTION_TEMPLATE = (
     "You are a networked intelligence helping a human track knowledge triples"

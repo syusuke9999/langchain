@@ -36,12 +36,6 @@ class TracerSessionBase(TracerSessionV1Base):
     tenant_id: UUID
 
 
-class TracerSessionCreate(TracerSessionBase):
-    """A creation class for TracerSession."""
-
-    id: Optional[UUID]
-
-
 class TracerSession(TracerSessionBase):
     """TracerSessionV1 schema for the V2 API."""
 
@@ -130,13 +124,16 @@ class Run(RunBase):
     def assign_name(cls, values: dict) -> dict:
         """Assign name to the run."""
         if "name" not in values:
-            values["name"] = values["serialized"]["name"]
+            if "name" in values["serialized"]:
+                values["name"] = values["serialized"]["name"]
+            elif "id" in values["serialized"]:
+                values["name"] = values["serialized"]["id"][-1]
         return values
 
 
 class RunCreate(RunBase):
     name: str
-    session_id: UUID
+    session_name: Optional[str] = None
 
     @root_validator(pre=True)
     def add_runtime_env(cls, values: Dict[str, Any]) -> Dict[str, Any]:

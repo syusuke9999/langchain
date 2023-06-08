@@ -1,4 +1,4 @@
-"""Loader that uses Playwright to load a page, then uses unstructured to load the html.
+"""Playwright を使用してページをロードし、その後「unstructured」を使用して HTML をロードするローダー。
 """
 import logging
 from typing import List, Optional
@@ -10,13 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 class PlaywrightURLLoader(BaseLoader):
-    """Loader that uses Playwright and to load a page and unstructured to load the html.
-    This is useful for loading pages that require javascript to render.
+    """Playwright を使用してページをロードし、構造化されていない HTML をロードするローダー。
+        これは、JavaScript が必要なページのレンダリングに役立ちます。
 
-    Attributes:
-        urls (List[str]): List of URLs to load.
-        continue_on_failure (bool): If True, continue loading other URLs on failure.
-        headless (bool): If True, the browser will run in headless mode.
+        属性:
+            urls (List[str]): ロードする URL のリスト。
+            continue_on_failure (bool): True の場合、失敗時に他の URL のロードを続行します。
+            headless (bool): True の場合、ブラウザはヘッドレスモードで実行されます。
     """
 
     def __init__(
@@ -49,10 +49,10 @@ class PlaywrightURLLoader(BaseLoader):
         self.remove_selectors = remove_selectors
 
     def load(self) -> List[Document]:
-        """Load the specified URLs using Playwright and create Document instances.
+        """Playwright を使用して指定された URL をロードし、Document インスタンスを作成します。
 
-        Returns:
-            List[Document]: A list of Document instances with loaded content.
+                戻り値:
+                    List[Document]: ロードされたコンテンツを持つ Document インスタンスのリスト。
         """
         from playwright.sync_api import sync_playwright
         from unstructured.partition.html import partition_html

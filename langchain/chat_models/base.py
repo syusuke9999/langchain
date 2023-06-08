@@ -17,6 +17,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForLLMRun,
     Callbacks,
 )
+from langchain.load.dump import dumpd
 from langchain.schema import (
     AIMessage,
     BaseMessage,
@@ -25,6 +26,7 @@ from langchain.schema import (
     HumanMessage,
     LLMResult,
     PromptValue,
+    RunInfo,
 )
 
 
@@ -68,12 +70,13 @@ class BaseChatModel(BaseLanguageModel, ABC):
 
         params = self.dict()
         params["stop"] = stop
+        options = {"stop": stop}
 
         callback_manager = CallbackManager.configure(
             callbacks, self.callbacks, self.verbose
         )
         run_manager = callback_manager.on_chat_model_start(
-            {"name": self.__class__.__name__}, messages, invocation_params=params
+            dumpd(self), messages, invocation_params=params, options=options
         )
 
         new_arg_supported = inspect.signature(self._generate).parameters.get(
@@ -93,6 +96,8 @@ class BaseChatModel(BaseLanguageModel, ABC):
         generations = [res.generations for res in results]
         output = LLMResult(generations=generations, llm_output=llm_output)
         run_manager.on_llm_end(output)
+        if run_manager:
+            output.run = RunInfo(run_id=run_manager.run_id)
         return output
 
     async def agenerate(
@@ -104,12 +109,13 @@ class BaseChatModel(BaseLanguageModel, ABC):
         """Top Level call"""
         params = self.dict()
         params["stop"] = stop
+        options = {"stop": stop}
 
         callback_manager = AsyncCallbackManager.configure(
             callbacks, self.callbacks, self.verbose
         )
         run_manager = await callback_manager.on_chat_model_start(
-            {"name": self.__class__.__name__}, messages, invocation_params=params
+            dumpd(self), messages, invocation_params=params, options=options
         )
 
         new_arg_supported = inspect.signature(self._agenerate).parameters.get(
@@ -131,6 +137,8 @@ class BaseChatModel(BaseLanguageModel, ABC):
         generations = [res.generations for res in results]
         output = LLMResult(generations=generations, llm_output=llm_output)
         await run_manager.on_llm_end(output)
+        if run_manager:
+            output.run = RunInfo(run_id=run_manager.run_id)
         return output
 
     def generate_prompt(

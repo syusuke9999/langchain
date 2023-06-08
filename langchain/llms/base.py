@@ -19,12 +19,14 @@ from langchain.callbacks.manager import (
     CallbackManagerForLLMRun,
     Callbacks,
 )
+from langchain.load.dump import dumpd
 from langchain.schema import (
     AIMessage,
     BaseMessage,
     Generation,
     LLMResult,
     PromptValue,
+    RunInfo,
     get_buffer_string,
 )
 
@@ -158,6 +160,7 @@ class BaseLLM(BaseLanguageModel, ABC):
             )
         params = self.dict()
         params["stop"] = stop
+        options = {"stop": stop}
         (
             existing_prompts,
             llm_string,
@@ -178,7 +181,7 @@ class BaseLLM(BaseLanguageModel, ABC):
                     "Asked to cache, but no cache found at `langchain.cache`."
                 )
             run_manager = callback_manager.on_llm_start(
-                {"name": self.__class__.__name__}, prompts, invocation_params=params
+                dumpd(self), prompts, invocation_params=params, options=options
             )
             try:
                 output = (
@@ -190,12 +193,15 @@ class BaseLLM(BaseLanguageModel, ABC):
                 run_manager.on_llm_error(e)
                 raise e
             run_manager.on_llm_end(output)
+            if run_manager:
+                output.run = RunInfo(run_id=run_manager.run_id)
             return output
         if len(missing_prompts) > 0:
             run_manager = callback_manager.on_llm_start(
-                {"name": self.__class__.__name__},
+                dumpd(self),
                 missing_prompts,
                 invocation_params=params,
+                options=options,
             )
             try:
                 new_results = (
@@ -210,10 +216,14 @@ class BaseLLM(BaseLanguageModel, ABC):
             llm_output = update_cache(
                 existing_prompts, llm_string, missing_prompt_idxs, new_results, prompts
             )
+            run_info = None
+            if run_manager:
+                run_info = RunInfo(run_id=run_manager.run_id)
         else:
             llm_output = {}
+            run_info = None
         generations = [existing_prompts[i] for i in range(len(prompts))]
-        return LLMResult(generations=generations, llm_output=llm_output)
+        return LLMResult(generations=generations, llm_output=llm_output, run=run_info)
 
     async def agenerate(
         self,
@@ -224,6 +234,7 @@ class BaseLLM(BaseLanguageModel, ABC):
         """Run the LLM on the given prompt and input."""
         params = self.dict()
         params["stop"] = stop
+        options = {"stop": stop}
         (
             existing_prompts,
             llm_string,
@@ -244,7 +255,7 @@ class BaseLLM(BaseLanguageModel, ABC):
                     "Asked to cache, but no cache found at `langchain.cache`."
                 )
             run_manager = await callback_manager.on_llm_start(
-                {"name": self.__class__.__name__}, prompts, invocation_params=params
+                dumpd(self), prompts, invocation_params=params, options=options
             )
             try:
                 output = (
@@ -256,12 +267,15 @@ class BaseLLM(BaseLanguageModel, ABC):
                 await run_manager.on_llm_error(e, verbose=self.verbose)
                 raise e
             await run_manager.on_llm_end(output, verbose=self.verbose)
+            if run_manager:
+                output.run = RunInfo(run_id=run_manager.run_id)
             return output
         if len(missing_prompts) > 0:
             run_manager = await callback_manager.on_llm_start(
-                {"name": self.__class__.__name__},
+                dumpd(self),
                 missing_prompts,
                 invocation_params=params,
+                options=options,
             )
             try:
                 new_results = (
@@ -278,10 +292,14 @@ class BaseLLM(BaseLanguageModel, ABC):
             llm_output = update_cache(
                 existing_prompts, llm_string, missing_prompt_idxs, new_results, prompts
             )
+            run_info = None
+            if run_manager:
+                run_info = RunInfo(run_id=run_manager.run_id)
         else:
             llm_output = {}
+            run_info = None
         generations = [existing_prompts[i] for i in range(len(prompts))]
-        return LLMResult(generations=generations, llm_output=llm_output)
+        return LLMResult(generations=generations, llm_output=llm_output, run=run_info)
 
     def __call__(
         self, prompt: str, stop: Optional[List[str]] = None, callbacks: Callbacks = None

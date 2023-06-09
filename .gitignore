@@ -150,9 +150,7 @@ wandb/
 # integration test artifacts
 data_map*
 \[('_type', 'fake'), ('stop', None)]!/japanize.patch
-!/Japanize-glossary.patch
-!/.python-version
-!/remove-api-key.txt
-!/secret-patterns.txt
-!/remove-api-key.txt
-!/secret-patterns.txt
+Japanize-glossary.patch
+.python-version
+remove-api-key.txt
+secret-patterns.txt

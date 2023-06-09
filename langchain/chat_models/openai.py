@@ -136,10 +136,6 @@ class ChatOpenAI(BaseChatModel):
             openai = ChatOpenAI(model_name="gpt-3.5-turbo")
     """
 
-    @property
-    def lc_serializable(self) -> bool:
-        return True
-
     client: Any  #: :meta private:
     model_name: str = Field(default="gpt-3.5-turbo", alias="model")
     """Model name to use."""
@@ -391,9 +387,9 @@ class ChatOpenAI(BaseChatModel):
             "model": self.model_name,
         }
         if self.openai_proxy:
-            openai_creds["proxy"] = (
-                {"http": self.openai_proxy, "https": self.openai_proxy},
-            )
+            import openai
+
+            openai.proxy = {"http": self.openai_proxy, "https": self.openai_proxy}  # type: ignore[assignment]  # noqa: E501
         return {**openai_creds, **self._default_params}
 
     @property

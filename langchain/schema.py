@@ -17,8 +17,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, Extra, Field, root_validator
 
-from langchain.load.serializable import Serializable
-
 RUN_KEY = "__run"
 
 
@@ -57,7 +55,7 @@ class AgentFinish(NamedTuple):
     log: str
 
 
-class Generation(Serializable):
+class Generation(BaseModel):
     """Output of a single generation."""
 
     text: str
@@ -69,7 +67,7 @@ class Generation(Serializable):
     # TODO: add log probs
 
 
-class BaseMessage(Serializable):
+class BaseMessage(BaseModel):
     """Message object."""
 
     content: str
@@ -196,7 +194,7 @@ class LLMResult(BaseModel):
         )
 
 
-class PromptValue(Serializable, ABC):
+class PromptValue(BaseModel, ABC):
     @abstractmethod
     def to_string(self) -> str:
         """Return prompt as string."""
@@ -206,7 +204,7 @@ class PromptValue(Serializable, ABC):
         """Return prompt as messages."""
 
 
-class BaseMemory(Serializable, ABC):
+class BaseMemory(BaseModel, ABC):
     """Base interface for memory in chains."""
 
     class Config:
@@ -284,7 +282,7 @@ class BaseChatMessageHistory(ABC):
         """Remove all messages from the store"""
 
 
-class Document(Serializable):
+class Document(BaseModel):
     """Interface for interacting with a document."""
 
     page_content: str
@@ -323,7 +321,7 @@ Memory = BaseMemory
 T = TypeVar("T")
 
 
-class BaseOutputParser(Serializable, ABC, Generic[T]):
+class BaseOutputParser(BaseModel, ABC, Generic[T]):
     """Class to parse the output of an LLM call.
 
     Output parsers help structure language model responses.

@@ -19,7 +19,6 @@ from langchain.callbacks.manager import (
     CallbackManagerForLLMRun,
     Callbacks,
 )
-from langchain.load.dump import dumpd
 from langchain.schema import (
     AIMessage,
     BaseMessage,
@@ -160,7 +159,6 @@ class BaseLLM(BaseLanguageModel, ABC):
             )
         params = self.dict()
         params["stop"] = stop
-        options = {"stop": stop}
         (
             existing_prompts,
             llm_string,
@@ -181,7 +179,7 @@ class BaseLLM(BaseLanguageModel, ABC):
                     "Asked to cache, but no cache found at `langchain.cache`."
                 )
             run_manager = callback_manager.on_llm_start(
-                dumpd(self), prompts, invocation_params=params, options=options
+                {"name": self.__class__.__name__}, prompts, invocation_params=params
             )
             try:
                 output = (
@@ -198,10 +196,9 @@ class BaseLLM(BaseLanguageModel, ABC):
             return output
         if len(missing_prompts) > 0:
             run_manager = callback_manager.on_llm_start(
-                dumpd(self),
+                {"name": self.__class__.__name__},
                 missing_prompts,
                 invocation_params=params,
-                options=options,
             )
             try:
                 new_results = (
@@ -234,7 +231,6 @@ class BaseLLM(BaseLanguageModel, ABC):
         """Run the LLM on the given prompt and input."""
         params = self.dict()
         params["stop"] = stop
-        options = {"stop": stop}
         (
             existing_prompts,
             llm_string,
@@ -255,7 +251,7 @@ class BaseLLM(BaseLanguageModel, ABC):
                     "Asked to cache, but no cache found at `langchain.cache`."
                 )
             run_manager = await callback_manager.on_llm_start(
-                dumpd(self), prompts, invocation_params=params, options=options
+                {"name": self.__class__.__name__}, prompts, invocation_params=params
             )
             try:
                 output = (
@@ -272,10 +268,9 @@ class BaseLLM(BaseLanguageModel, ABC):
             return output
         if len(missing_prompts) > 0:
             run_manager = await callback_manager.on_llm_start(
-                dumpd(self),
+                {"name": self.__class__.__name__},
                 missing_prompts,
                 invocation_params=params,
-                options=options,
             )
             try:
                 new_results = (

@@ -124,10 +124,7 @@ class Run(RunBase):
     def assign_name(cls, values: dict) -> dict:
         """Assign name to the run."""
         if "name" not in values:
-            if "name" in values["serialized"]:
-                values["name"] = values["serialized"]["name"]
-            elif "id" in values["serialized"]:
-                values["name"] = values["serialized"]["id"][-1]
+            values["name"] = values["serialized"]["name"]
         return values
 
 

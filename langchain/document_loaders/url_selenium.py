@@ -1,4 +1,4 @@
-"""Selenium を使用してページをロードし、その後 unstructured を使用して HTML をロードするローダー。
+"""Loader that uses Selenium to load a page, then uses unstructured to load the html.
 """
 import logging
 from typing import TYPE_CHECKING, List, Literal, Optional, Union
@@ -13,17 +13,17 @@ logger = logging.getLogger(__name__)
 
 
 class SeleniumURLLoader(BaseLoader):
-    """Selenium を使用してページをロードし、"unstructured" を使用して HTML をロードするローダー。
-        これは、JavaScript が必要なページのレンダリングに役立ちます。
+    """Loader that uses Selenium and to load a page and unstructured to load the html.
+    This is useful for loading pages that require javascript to render.
 
-        属性:
-            urls (List[str]): ロードする URL のリスト。
-            continue_on_failure (bool): True の場合、失敗時に他の URL のロードを続行します。
-            browser (str): 使用するブラウザ。'chrome' または 'firefox' のいずれか。
-            binary_location (Optional[str]): ブラウザのバイナリの場所。
-            executable_path (Optional[str]): ブラウザ実行ファイルへのパス。
-            headless (bool): True の場合、ブラウザはヘッドレスモードで実行されます。
-            arguments [List[str]]: ブラウザに渡す引数のリスト。
+    Attributes:
+        urls (List[str]): List of URLs to load.
+        continue_on_failure (bool): If True, continue loading other URLs on failure.
+        browser (str): The browser to use, either 'chrome' or 'firefox'.
+        binary_location (Optional[str]): The location of the browser binary.
+        executable_path (Optional[str]): The path to the browser executable.
+        headless (bool): If True, the browser will run in headless mode.
+        arguments [List[str]]: List of arguments to pass to the browser.
     """
 
     def __init__(

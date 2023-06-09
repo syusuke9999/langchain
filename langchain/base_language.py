@@ -4,8 +4,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List, Optional, Sequence, Set
 
+from pydantic import BaseModel
+
 from langchain.callbacks.manager import Callbacks
-from langchain.load.serializable import Serializable
 from langchain.schema import BaseMessage, LLMResult, PromptValue, get_buffer_string
 
 
@@ -28,7 +29,7 @@ def _get_token_ids_default_method(text: str) -> List[int]:
     return tokenizer.encode(text)
 
 
-class BaseLanguageModel(Serializable, ABC):
+class BaseLanguageModel(BaseModel, ABC):
     @abstractmethod
     def generate_prompt(
         self,

@@ -123,14 +123,6 @@ async def acompletion_with_retry(
 class BaseOpenAI(BaseLLM):
     """Wrapper around OpenAI large language models."""
 
-    @property
-    def lc_secrets(self) -> Dict[str, str]:
-        return {"openai_api_key": "OPENAI_API_KEY"}
-
-    @property
-    def lc_serializable(self) -> bool:
-        return True
-
     client: Any  #: :meta private:
     model_name: str = Field("text-davinci-003", alias="model")
     """Model name to use."""
@@ -459,10 +451,9 @@ class BaseOpenAI(BaseLLM):
             "organization": self.openai_organization,
         }
         if self.openai_proxy:
-            openai_creds["proxy"] = {
-                "http": self.openai_proxy,
-                "https": self.openai_proxy,
-            }
+            import openai
+
+            openai.proxy = {"http": self.openai_proxy, "https": self.openai_proxy}  # type: ignore[assignment]  # noqa: E501
         return {**openai_creds, **self._default_params}
 
     @property
@@ -661,14 +652,6 @@ class OpenAIChat(BaseLLM):
             from langchain.llms import OpenAIChat
             openaichat = OpenAIChat(model_name="gpt-3.5-turbo")
     """
-
-    @property
-    def lc_serializable(self) -> bool:
-        return True
-
-    @property
-    def lc_secrets(self) -> Dict[str, str]:
-        return {"openai_api_key": "OPENAI_API_KEY"}
 
     client: Any  #: :meta private:
     model_name: str = "gpt-3.5-turbo"

@@ -4,7 +4,6 @@ from langchain.prompts import PromptTemplate
 
 template = """You are a teacher coming up with questions to ask on a quiz. 
 Given the following document, please generate a question and answer based on that document.
-Be sure to generate a question in "Japanese", not English.
 
 Example Format:
 <Begin Document>
@@ -13,9 +12,7 @@ Example Format:
 QUESTION: question here
 ANSWER: answer here
 
-These questions should be detailed and be based explicitly on information in the document. 
-Remember, again, the question text should be generated in Japanese, not English.
-Begin!
+These questions should be detailed and be based explicitly on information in the document. Begin!
 
 <Begin Document>
 {doc}

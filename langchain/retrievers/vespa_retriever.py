@@ -1,14 +1,9 @@
 """Wrapper for retrieving documents from Vespa."""
-
 from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Sequence, Union
 
-from langchain.callbacks.manager import (
-    AsyncCallbackManagerForRetrieverRun,
-    CallbackManagerForRetrieverRun,
-)
 from langchain.schema import BaseRetriever, Document
 
 if TYPE_CHECKING:
@@ -53,24 +48,12 @@ class VespaRetriever(BaseRetriever):
             docs.append(Document(page_content=page_content, metadata=metadata))
         return docs
 
-    def _get_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    def get_relevant_documents(self, query: str) -> List[Document]:
         body = self._query_body.copy()
         body["query"] = query
         return self._query(body)
 
-    async def _aget_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[AsyncCallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    async def aget_relevant_documents(self, query: str) -> List[Document]:
         raise NotImplementedError
 
     def get_relevant_documents_with_filter(

@@ -10,10 +10,6 @@ from typing import Any, List, Optional
 import numpy as np
 from pydantic import BaseModel
 
-from langchain.callbacks.manager import (
-    AsyncCallbackManagerForRetrieverRun,
-    CallbackManagerForRetrieverRun,
-)
 from langchain.embeddings.base import Embeddings
 from langchain.schema import BaseRetriever, Document
 
@@ -43,13 +39,7 @@ class KNNRetriever(BaseRetriever, BaseModel):
         index = create_index(texts, embeddings)
         return cls(embeddings=embeddings, index=index, texts=texts, **kwargs)
 
-    def _get_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    def get_relevant_documents(self, query: str) -> List[Document]:
         query_embeds = np.array(self.embeddings.embed_query(query))
         # calc L2 norm
         index_embeds = self.index / np.sqrt((self.index**2).sum(1, keepdims=True))
@@ -71,11 +61,5 @@ class KNNRetriever(BaseRetriever, BaseModel):
         ]
         return top_k_results
 
-    async def _aget_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[AsyncCallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    async def aget_relevant_documents(self, query: str) -> List[Document]:
         raise NotImplementedError

@@ -1,6 +1,7 @@
 """All different types of document loaders."""
 
 from langchain.document_loaders.airbyte_json import AirbyteJSONLoader
+from langchain.document_loaders.airtable import AirtableLoader
 from langchain.document_loaders.apify_dataset import ApifyDatasetLoader
 from langchain.document_loaders.arxiv import ArxivLoader
 from langchain.document_loaders.azlyrics import AZLyricsLoader
@@ -30,6 +31,7 @@ from langchain.document_loaders.email import (
     OutlookMessageLoader,
     UnstructuredEmailLoader,
 )
+from langchain.document_loaders.embaas import EmbaasBlobLoader, EmbaasLoader
 from langchain.document_loaders.epub import UnstructuredEPubLoader
 from langchain.document_loaders.evernote import EverNoteLoader
 from langchain.document_loaders.excel import UnstructuredExcelLoader
@@ -120,6 +122,7 @@ from langchain.document_loaders.word_document import (
     Docx2txtLoader,
     UnstructuredWordDocumentLoader,
 )
+from langchain.document_loaders.xml import UnstructuredXMLLoader
 from langchain.document_loaders.youtube import (
     GoogleApiClient,
     GoogleApiYoutubeLoader,
@@ -135,6 +138,7 @@ TelegramChatLoader = TelegramChatFileLoader
 __all__ = [
     "AZLyricsLoader",
     "AirbyteJSONLoader",
+    "AirtableLoader",
     "ApifyDatasetLoader",
     "ArxivLoader",
     "AzureBlobStorageContainerLoader",
@@ -240,10 +244,13 @@ __all__ = [
     "UnstructuredRTFLoader",
     "UnstructuredURLLoader",
     "UnstructuredWordDocumentLoader",
+    "UnstructuredXMLLoader",
     "WeatherDataLoader",
     "WebBaseLoader",
     "WhatsAppChatLoader",
     "WikipediaLoader",
     "YoutubeLoader",
     "SnowflakeLoader",
+    "EmbaasLoader",
+    "EmbaasBlobLoader",
 ]

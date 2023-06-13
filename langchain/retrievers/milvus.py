@@ -1,11 +1,7 @@
 """Milvus Retriever"""
-
+import warnings
 from typing import Any, Dict, List, Optional
 
-from langchain.callbacks.manager import (
-    AsyncCallbackManagerForRetrieverRun,
-    CallbackManagerForRetrieverRun,
-)
 from langchain.embeddings.base import Embeddings
 from langchain.schema import BaseRetriever, Document
 from langchain.vectorstores.milvus import Milvus
@@ -13,7 +9,7 @@ from langchain.vectorstores.milvus import Milvus
 # TODO: Update to MilvusClient + Hybrid Search when available
 
 
-class MilvusRetreiver(BaseRetriever):
+class MilvusRetriever(BaseRetriever):
     def __init__(
         self,
         embedding_function: Embeddings,
@@ -41,23 +37,17 @@ class MilvusRetreiver(BaseRetriever):
         """
         self.store.add_texts(texts, metadatas)
 
-    def _get_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
-        run_manager_ = run_manager or CallbackManagerForRetrieverRun.get_noop_manager()
-        return self.retriever.get_relevant_documents(
-            query, run_manager=run_manager_.get_child(), **kwargs
-        )
+    def get_relevant_documents(self, query: str) -> List[Document]:
+        return self.retriever.get_relevant_documents(query)
 
-    async def _aget_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[AsyncCallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    async def aget_relevant_documents(self, query: str) -> List[Document]:
         raise NotImplementedError
+
+
+def MilvusRetreiver(*args: Any, **kwargs: Any) -> MilvusRetriever:
+    warnings.warn(
+        "MilvusRetreiver will be deprecated in the future. "
+        "Please use MilvusRetriever ('i' before 'e') instead.",
+        DeprecationWarning,
+    )
+    return MilvusRetriever(*args, **kwargs)

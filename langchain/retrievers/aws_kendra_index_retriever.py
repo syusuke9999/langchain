@@ -1,12 +1,7 @@
 """Retriever wrapper for AWS Kendra."""
-
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from langchain.callbacks.manager import (
-    AsyncCallbackManagerForRetrieverRun,
-    CallbackManagerForRetrieverRun,
-)
 from langchain.schema import BaseRetriever, Document
 
 
@@ -89,24 +84,12 @@ Document Excerpt: {doc_excerpt}
 
         return [self._get_top_n_results(response, i) for i in range(0, r_count)]
 
-    def _get_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    def get_relevant_documents(self, query: str) -> List[Document]:
         """Run search on Kendra index and get top k documents
 
         docs = get_relevant_documents('This is my query')
         """
         return self._kendra_query(query)
 
-    async def _aget_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[AsyncCallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    async def aget_relevant_documents(self, query: str) -> List[Document]:
         raise NotImplementedError("AwsKendraIndexRetriever does not support async")

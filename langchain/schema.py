@@ -1,11 +1,8 @@
 """Common schema objects."""
 from __future__ import annotations
 
-import warnings
 from abc import ABC, abstractmethod
-from inspect import signature
 from typing import (
-    TYPE_CHECKING,
     Any,
     Dict,
     Generic,
@@ -20,12 +17,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Extra, Field, root_validator
 
-if TYPE_CHECKING:
-    from langchain.callbacks.manager import (
-        AsyncCallbackManagerForRetrieverRun,
-        CallbackManagerForRetrieverRun,
-        Callbacks,
-    )
+from langchain.load.serializable import Serializable
 
 RUN_KEY = "__run"
 
@@ -65,7 +57,7 @@ class AgentFinish(NamedTuple):
     log: str
 
 
-class Generation(BaseModel):
+class Generation(Serializable):
     """Output of a single generation."""
 
     text: str
@@ -77,7 +69,7 @@ class Generation(BaseModel):
     # TODO: add log probs
 
 
-class BaseMessage(BaseModel):
+class BaseMessage(Serializable):
     """Message object."""
 
     content: str
@@ -204,7 +196,7 @@ class LLMResult(BaseModel):
         )
 
 
-class PromptValue(BaseModel, ABC):
+class PromptValue(Serializable, ABC):
     @abstractmethod
     def to_string(self) -> str:
         """Return prompt as string."""
@@ -214,7 +206,7 @@ class PromptValue(BaseModel, ABC):
         """Return prompt as messages."""
 
 
-class BaseMemory(BaseModel, ABC):
+class BaseMemory(Serializable, ABC):
     """Base interface for memory in chains."""
 
     class Config:
@@ -292,7 +284,7 @@ class BaseChatMessageHistory(ABC):
         """Remove all messages from the store"""
 
 
-class Document(BaseModel):
+class Document(Serializable):
     """Interface for interacting with a document."""
 
     page_content: str
@@ -300,152 +292,27 @@ class Document(BaseModel):
 
 
 class BaseRetriever(ABC):
-    """Base interface for a retriever."""
-
-    _new_arg_supported: bool = False
-    _expects_other_args: bool = False
-
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
-        # Version upgrade for old retrievers that implemented the public
-        # methods directly.
-        if cls.get_relevant_documents != BaseRetriever.get_relevant_documents:
-            warnings.warn(
-                "Retrievers must implement abstract `_get_relevant_documents` method"
-                " instead of `get_relevant_documents`",
-                DeprecationWarning,
-            )
-            swap = cls.get_relevant_documents
-            cls.get_relevant_documents = (  # type: ignore[assignment]
-                BaseRetriever.get_relevant_documents
-            )
-            cls._get_relevant_documents = swap  # type: ignore[assignment]
-        if (
-            hasattr(cls, "aget_relevant_documents")
-            and cls.aget_relevant_documents != BaseRetriever.aget_relevant_documents
-        ):
-            warnings.warn(
-                "Retrievers must implement abstract `_aget_relevant_documents` method"
-                " instead of `aget_relevant_documents`",
-                DeprecationWarning,
-            )
-            aswap = cls.aget_relevant_documents
-            cls.aget_relevant_documents = (  # type: ignore[assignment]
-                BaseRetriever.aget_relevant_documents
-            )
-            cls._aget_relevant_documents = aswap  # type: ignore[assignment]
-        parameters = signature(cls._get_relevant_documents).parameters
-        cls._new_arg_supported = parameters.get("run_manager") is not None
-        # If a V1 retriever broke the interface and expects additional arguments
-        cls._expects_other_args = (not cls._new_arg_supported) and len(parameters) > 2
-
     @abstractmethod
-    def _get_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    def get_relevant_documents(self, query: str) -> List[Document]:
         """Get documents relevant for a query.
+
         Args:
             query: string to find relevant documents for
-            run_manager: The callbacks handler to use
+
         Returns:
             List of relevant documents
         """
 
     @abstractmethod
-    async def _aget_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[AsyncCallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    async def aget_relevant_documents(self, query: str) -> List[Document]:
         """Get documents relevant for a query.
+
         Args:
             query: string to find relevant documents for
-            run_manager: The callbacks handler to use
+
         Returns:
             List of relevant documents
         """
-
-    def get_relevant_documents(
-        self, query: str, *, callbacks: Callbacks = None, **kwargs: Any
-    ) -> List[Document]:
-        """Retrieve documents.
-        Args:
-            query: string to find relevant documents for
-            callbacks: Callback manager or list of callbacks
-        Returns:
-            List of relevant documents
-        """
-        from langchain.callbacks.manager import CallbackManager
-
-        callback_manager = CallbackManager.configure(
-            callbacks, None, verbose=kwargs.get("verbose", False)
-        )
-        run_manager = callback_manager.on_retriever_start(
-            query,
-            **kwargs,
-        )
-        try:
-            if self._new_arg_supported:
-                result = self._get_relevant_documents(
-                    query, run_manager=run_manager, **kwargs
-                )
-            elif self._expects_other_args:
-                result = self._get_relevant_documents(query, **kwargs)
-            else:
-                result = self._get_relevant_documents(query)
-        except Exception as e:
-            run_manager.on_retriever_error(e)
-            raise e
-        else:
-            run_manager.on_retriever_end(
-                result,
-                **kwargs,
-            )
-            return result
-
-    async def aget_relevant_documents(
-        self, query: str, *, callbacks: Callbacks = None, **kwargs: Any
-    ) -> List[Document]:
-        """Get documents relevant for a query.
-        Args:
-            query: string to find relevant documents for
-            callbacks: Callback manager or list of callbacks
-        Returns:
-            List of relevant documents
-        """
-        from langchain.callbacks.manager import AsyncCallbackManager
-
-        callback_manager = AsyncCallbackManager.configure(
-            callbacks, None, verbose=kwargs.get("verbose", False)
-        )
-        run_manager = await callback_manager.on_retriever_start(
-            query,
-            **kwargs,
-        )
-        try:
-            if self._new_arg_supported:
-                result = await self._aget_relevant_documents(
-                    query, run_manager=run_manager, **kwargs
-                )
-            elif self._expects_other_args:
-                result = await self._aget_relevant_documents(query, **kwargs)
-            else:
-                result = await self._aget_relevant_documents(query)
-        except Exception as e:
-            await run_manager.on_retriever_error(e)
-            raise e
-        else:
-            await run_manager.on_retriever_end(
-                result,
-                **kwargs,
-            )
-            return result
 
 
 # For backwards compatibility
@@ -456,7 +323,7 @@ Memory = BaseMemory
 T = TypeVar("T")
 
 
-class BaseOutputParser(BaseModel, ABC, Generic[T]):
+class BaseOutputParser(Serializable, ABC, Generic[T]):
     """Class to parse the output of an LLM call.
 
     Output parsers help structure language model responses.

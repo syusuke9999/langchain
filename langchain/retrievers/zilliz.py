@@ -1,11 +1,7 @@
 """Zilliz Retriever"""
-
+import warnings
 from typing import Any, Dict, List, Optional
 
-from langchain.callbacks.manager import (
-    AsyncCallbackManagerForRetrieverRun,
-    CallbackManagerForRetrieverRun,
-)
 from langchain.embeddings.base import Embeddings
 from langchain.schema import BaseRetriever, Document
 from langchain.vectorstores.zilliz import Zilliz
@@ -13,7 +9,7 @@ from langchain.vectorstores.zilliz import Zilliz
 # TODO: Update to ZillizClient + Hybrid Search when available
 
 
-class ZillizRetreiver(BaseRetriever):
+class ZillizRetriever(BaseRetriever):
     def __init__(
         self,
         embedding_function: Embeddings,
@@ -41,23 +37,17 @@ class ZillizRetreiver(BaseRetriever):
         """
         self.store.add_texts(texts, metadatas)
 
-    def _get_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
-        run_manager_ = run_manager or CallbackManagerForRetrieverRun.get_noop_manager()
-        return self.retriever.get_relevant_documents(
-            query, run_manager=run_manager_.get_child(), **kwargs
-        )
+    def get_relevant_documents(self, query: str) -> List[Document]:
+        return self.retriever.get_relevant_documents(query)
 
-    async def _aget_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: Optional[AsyncCallbackManagerForRetrieverRun] = None,
-        **kwargs: Any,
-    ) -> List[Document]:
+    async def aget_relevant_documents(self, query: str) -> List[Document]:
         raise NotImplementedError
+
+
+def ZillizRetreiver(*args: Any, **kwargs: Any) -> ZillizRetriever:
+    warnings.warn(
+        "ZillizRetreiver will be deprecated in the future. "
+        "Please use ZillizRetriever ('i' before 'e') instead.",
+        DeprecationWarning,
+    )
+    return ZillizRetriever(*args, **kwargs)

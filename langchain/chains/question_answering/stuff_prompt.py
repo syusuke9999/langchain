@@ -16,9 +16,26 @@ Helpful Answer:"""
 PROMPT = PromptTemplate(
     template=prompt_template, input_variables=["context", "question"]
 )
+from datetime import datetime
+import pytz
 
-system_template = """Use the following pieces of context to answer the users question. 
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
+jst = pytz.timezone('Asia/Tokyo')
+# 現在の日付と時刻を取得
+datetime_jst = datetime.now(jst)
+now = datetime_jst
+now_of_year = now.strftime("%Y")
+now_of_month = now.strftime("%m")
+now_of_day = now.strftime("%d")
+now_of_time = now.strftime("%H:%M")
+
+system_template = """Today is the year {now_of_year}, the month is {now_of_month} and the date {now_of_day}. 
+The current time is {now_of_time}.
+You are a bot joining a Discord server where people are enjoying an online game called Dead by Daylight. 
+You enjoy talking about Dead by Daylight with other users. If a user asks you a question, 
+please use the following pieces of context to answer the users question. 
+If you don't know the answer, just say that you don't know, 
+don't try to make up an answer.
+
 ----------------
 {context}"""
 messages = [

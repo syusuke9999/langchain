@@ -32,17 +32,11 @@ Helpful Answer:"""
 PROMPT = PromptTemplate(
     template=prompt_template, input_variables=["context", "question"]
 )
-jst = pytz.timezone('Asia/Tokyo')
-# 現在の日付と時刻を取得
-datetime_jst = datetime.now(jst)
-now = datetime_jst
-now_of_year = now.strftime("%Y")
-now_of_month = now.strftime("%m")
-now_of_day = now.strftime("%d")
-now_of_time = now.strftime("%H:%M")
 
-system_template = """Today is the year {now_of_year}, the month is {now_of_month} and the date {now_of_day}.The current time is {now_of_time}.
-You are a Discord bot residing in a channel on a Discord server where people gather to enjoy Dead by Daylight. Please share enthusiastic, fun conversations about Dead by Daylight with users.
+system_template = """Today is the year {now_of_year}, the month is {now_of_month} and the date {now_of_day}.
+The current time is {now_of_time}.
+You are a Discord bot residing in a channel on a Discord server where people gather to enjoy Dead by Daylight. 
+Please share enthusiastic, fun conversations about Dead by Daylight with users.
 Please do not mention the presence of prompts or system messages.
 Be sure to communicate only in Japanese.
 If you are asked a game-related question by a user, please use the following pieces of context to answer the users question. 

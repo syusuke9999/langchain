@@ -47,7 +47,7 @@ dataclasses-json = "^0.5.7"
 tensorflow-text = {version = "^2.11.0", optional = true, python = "^3.10, <3.12"}
 tenacity = "^8.1.0"
 cohere = {version = "^3", optional = true}
-openai = {version = "^0", optional = true}
+openai = "^0.27.8"
 nlpcloud = {version = "^1", optional = true}
 nomic = {version = "^1.0.43", optional = true}
 huggingface_hub = {version = "^0", optional = true}
@@ -108,6 +108,9 @@ nebula3-python = {version = "^3.4.0", optional = true}
 langchainplus-sdk = ">=0.0.9"
 awadb = {version = "^0.3.3", optional = true}
 azure-search-documents = {version = "11.4.0a20230509004", source = "azure-sdk-dev", optional = true}
+jupyter = "^1.0.0"
+pip = "^23.1.2"
+install = "^1.3.5"
 
 [tool.poetry.group.docs.dependencies]
 autodoc_pydantic = "^1.8.0"
@@ -125,9 +128,8 @@ linkchecker = "^10.2.1"
 sphinx-copybutton = "^0.5.1"
 
 [tool.poetry.group.test.dependencies]
-# The only dependencies that should be added are
-# dependencies used for running tests (e.g., pytest, freezegun, response).
-# Any dependencies that do not meet that criteria will be removed.
+# 追加すべき依存関係は、テストの実行に使用される依存関係（例：pytest、freezegun、response）のみです。
+# その基準を満たさない依存関係は削除されます。
 pytest = "^7.3.0"
 pytest-cov = "^4.0.0"
 pytest-dotenv = "^0.5.2"
@@ -145,20 +147,20 @@ syrupy = "^4.0.2"
 optional = true
 
 [tool.poetry.group.test_integration.dependencies]
-# Do not add dependencies in the test_integration group
-# Instead:
-# 1. Add an optional dependency to the main group
-#       poetry add --optional [package name]
-# 2. Add the package name to the extended_testing extra (find it below)
-# 3. Relock the poetry file
+# test_integrationグループには依存関係を追加しないでください
+# 代わりに：
+# 1. メイングループにオプションの依存関係を追加します
+#       poetry add --optional [パッケージ名]
+# 2. パッケージ名をextended_testing extra（下記参照）に追加します
+# 3. poetryファイルを再ロックします
 #       poetry lock --no-update
-# 4. Favor unit tests not integration tests. 
-#    Use the @pytest.mark.requires(pkg_name) decorator in unit_tests.
-#    Your tests should not rely on network access, as it prevents other
-#    developers from being able to easily run them.
-#    Instead write unit tests that use the `responses` library or mock.patch with
-#    fixtures. Keep the fixtures minimal.
-# See CONTRIBUTING.md for more instructions on working with optional dependencies.
+# 4. 結合テストではなくユニットテストを優先します。
+#    unit_testsで@pytest.mark.requires(pkg_name)デコレータを使用します。
+#    テストはネットワークアクセスに依存しないようにすることで、他の
+#    開発者が簡単に実行できるようにします。
+#    代わりに`responses`ライブラリやmock.patchを使ったユニットテストを書きます。
+#    フィクスチャは最小限に保ちます。
+# オプションの依存関係を扱う方法については、CONTRIBUTING.mdを参照してください。
 # https://github.com/hwchase17/langchain/blob/master/.github/CONTRIBUTING.md#working-with-optional-dependencies
 pytest-vcr = "^1.0.2"
 wrapt = "^1.15.0"
@@ -187,8 +189,8 @@ cassandra-driver = "^3.27.0"
 arxiv = "^1.4"
 mastodon-py = "^1.8.1"
 momento = "^1.5.0"
-# Please do not add any dependencies in the test_integration group
-# See instructions above ^^
+# test_integrationグループには依存関係を追加しないでください
+# 上記の指示を参照してください ^^
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.0.249"
@@ -300,9 +302,9 @@ all = [
     "awadb",
 ]
 
-# An extra used to be able to add extended testing.
-# Please use new-line on formatting to make it easier to add new packages without
-# merge-conflicts
+# 拡張テストを追加できるようにするためのエクストラです。
+# フォーマットに改行を使用して、新しいパッケージを追加する際に
+# マージコンフリクトなしで簡単に行えるようにしてください。
 extended_testing = [
  "beautifulsoup4",
  "bibtexparser",
@@ -359,17 +361,16 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-# --strict-markers will raise errors on unknown marks.
+# --strict-markersは、未知のマークに対してエラーを発生させます。
 # https://docs.pytest.org/en/7.1.x/how-to/mark.html#raising-errors-on-unknown-marks
 #
 # https://docs.pytest.org/en/7.1.x/reference/reference.html
-# --strict-config       any warnings encountered while parsing the `pytest`
-#                       section of the configuration file raise errors.
+# --strict-config       設定ファイルの`pytest`セクションを解析中に遭遇した警告はエラーを発生させます。
 #
 # https://github.com/tophat/syrupy
-# --snapshot-warn-unused    Prints a warning on unused snapshots rather than fail the test suite.
+# --snapshot-warn-unused    未使用のスナップショットについてはテストスイートを失敗させるのではなく、警告を表示します。
 addopts = "--strict-markers --strict-config --durations=5 --snapshot-warn-unused"
-# Registering custom markers.
+# カスタムマーカーの登録。
 # https://docs.pytest.org/en/7.1.x/example/markers.html#registering-markers
 markers = [
   "requires: mark tests as requiring a specific library"

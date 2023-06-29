@@ -35,8 +35,8 @@ logger = logging.getLogger(__name__)
 def _create_retry_decorator(embeddings: OpenAIEmbeddings) -> Callable[[Any], Any]:
     import openai
 
-    min_seconds = 50
-    max_seconds = 60
+    min_seconds = 60
+    max_seconds = 120
     # Wait 2^x * 1 second between each retry starting with
     # 4 seconds, then up to 10 seconds, then 10 seconds afterwards
     return retry(
@@ -57,8 +57,8 @@ def _create_retry_decorator(embeddings: OpenAIEmbeddings) -> Callable[[Any], Any
 def _async_retry_decorator(embeddings: OpenAIEmbeddings) -> Any:
     import openai
 
-    min_seconds = 50
-    max_seconds = 60
+    min_seconds = 60
+    max_seconds = 120
     # Wait 2^x * 1 second between each retry starting with
     # 4 seconds, then up to 10 seconds, then 10 seconds afterwards
     async_retrying = AsyncRetrying(

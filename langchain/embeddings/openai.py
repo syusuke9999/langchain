@@ -58,13 +58,13 @@ def _async_retry_decorator(embeddings: OpenAIEmbeddings) -> Any:
     import openai
 
     min_seconds = 4
-    max_seconds = 10
+    max_seconds = 60
     # Wait 2^x * 1 second between each retry starting with
     # 4 seconds, then up to 10 seconds, then 10 seconds afterwards
     async_retrying = AsyncRetrying(
         reraise=True,
         stop=stop_after_attempt(embeddings.max_retries),
-        wait=wait_exponential(multiplier=1, min=min_seconds, max=max_seconds),
+        wait=wait_exponential(multiplier=2, min=min_seconds, max=max_seconds),
         retry=(
             retry_if_exception_type(openai.error.Timeout)
             | retry_if_exception_type(openai.error.APIError)
@@ -108,43 +108,42 @@ async def async_embed_with_retry(embeddings: OpenAIEmbeddings, **kwargs: Any) ->
 
 
 class OpenAIEmbeddings(BaseModel, Embeddings):
-    """Wrapper around OpenAI embedding models.
+    """OpenAI埋め込みモデルのラッパー。
 
-    To use, you should have the ``openai`` python package installed, and the
-    environment variable ``OPENAI_API_KEY`` set with your API key or pass it
-    as a named parameter to the constructor.
+        使用するには、``openai`` pythonパッケージがインストールされていること、および
+        環境変数``OPENAI_API_KEY``があなたのAPIキーで設定されているか、それを
+        コンストラクタに名前付きパラメータとして渡す必要があります。
 
-    Example:
-        .. code-block:: python
+        例：
+            .. code-block:: python
 
-            from langchain.embeddings import OpenAIEmbeddings
-            openai = OpenAIEmbeddings(openai_api_key="my-api-key")
+                from langchain.embeddings import OpenAIEmbeddings
+                openai = OpenAIEmbeddings(openai_api_key="my-api-key")
 
-    In order to use the library with Microsoft Azure endpoints, you need to set
-    the OPENAI_API_TYPE, OPENAI_API_BASE, OPENAI_API_KEY and OPENAI_API_VERSION.
-    The OPENAI_API_TYPE must be set to 'azure' and the others correspond to
-    the properties of your endpoint.
-    In addition, the deployment name must be passed as the model parameter.
+        Microsoft Azureエンドポイントでライブラリを使用するには、OPENAI_API_TYPE、OPENAI_API_BASE、OPENAI_API_KEY、
+        およびOPENAI_API_VERSIONを設定する必要があります。
+        OPENAI_API_TYPEは'azure'に設定し、他のものはエンドポイントのプロパティに対応します。
+        さらに、デプロイメント名はモデルパラメータとして渡す必要があります。
 
-    Example:
-        .. code-block:: python
+        例：
+            .. code-block:: python
 
-            import os
-            os.environ["OPENAI_API_TYPE"] = "azure"
-            os.environ["OPENAI_API_BASE"] = "https://<your-endpoint.openai.azure.com/"
-            os.environ["OPENAI_API_KEY"] = "your AzureOpenAI key"
-            os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
-            os.environ["OPENAI_PROXY"] = "http://your-corporate-proxy:8080"
+                import os
+                os.environ["OPENAI_API_TYPE"] = "azure"
+                os.environ["OPENAI_API_BASE"] = "https://<your-endpoint.openai.azure.com/"
+                os.environ["OPENAI_API_KEY"] = "your AzureOpenAI key"
+                os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
+                os.environ["OPENAI_PROXY"] = "http://your-corporate-proxy:8080"
 
-            from langchain.embeddings.openai import OpenAIEmbeddings
-            embeddings = OpenAIEmbeddings(
-                deployment="your-embeddings-deployment-name",
-                model="your-embeddings-model-name",
-                openai_api_base="https://your-endpoint.openai.azure.com/",
-                openai_api_type="azure",
-            )
-            text = "This is a test query."
-            query_result = embeddings.embed_query(text)
+                from langchain.embeddings.openai import OpenAIEmbeddings
+                embeddings = OpenAIEmbeddings(
+                    deployment="your-embeddings-deployment-name",
+                    model="your-embeddings-model-name",
+                    openai_api_base="https://your-endpoint.openai.azure.com/",
+                    openai_api_type="azure",
+                )
+                text = "これはテストクエリです。"
+                query_result = embeddings.embed_query(text)
 
     """
 

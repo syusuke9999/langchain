@@ -339,9 +339,9 @@ class VectorStore(ABC):
 
         # Process each batch asynchronously
         for i, text_batch in enumerate(text_batches):
-            await cls.afrom_texts(text_batch, embedding, metadatas=metadatas[i * batch_size: (i + 1) * batch_size],
+            cls.afrom_texts(text_batch, embedding, metadatas=metadatas[i * batch_size: (i + 1) * batch_size],
                                   **kwargs)
-            await asyncio.sleep(delay)  # Add delay between batches
+            asyncio.sleep(delay)  # Add delay between batches
         return cls.from_texts(texts, embedding, metadatas=metadatas, **kwargs)
 
     @classmethod

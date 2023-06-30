@@ -1,9 +1,12 @@
 """Common schema objects."""
 from __future__ import annotations
 
+import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from inspect import signature
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Generic,
@@ -19,6 +22,13 @@ from uuid import UUID
 from pydantic import BaseModel, Field, root_validator
 
 from langchain.load.serializable import Serializable
+
+if TYPE_CHECKING:
+    from langchain.callbacks.manager import (
+        AsyncCallbackManagerForRetrieverRun,
+        CallbackManagerForRetrieverRun,
+        Callbacks,
+    )
 
 RUN_KEY = "__run"
 
@@ -76,6 +86,11 @@ class Generation(Serializable):
     """May include things like reason for finishing (e.g. in OpenAI)"""
     # TODO: add log probs
 
+    @property
+    def lc_serializable(self) -> bool:
+        """This class is LangChain serializable."""
+        return True
+
 
 class BaseMessage(Serializable):
     """Message object."""
@@ -87,6 +102,11 @@ class BaseMessage(Serializable):
     @abstractmethod
     def type(self) -> str:
         """Type of the message, used for serialization."""
+
+    @property
+    def lc_serializable(self) -> bool:
+        """This class is LangChain serializable."""
+        return True
 
 
 class HumanMessage(BaseMessage):
@@ -217,8 +237,34 @@ class LLMResult(BaseModel):
     each input could have multiple generations."""
     llm_output: Optional[dict] = None
     """For arbitrary LLM provider specific output."""
-    run: Optional[RunInfo] = None
+    run: Optional[List[RunInfo]] = None
     """Run metadata."""
+
+    def flatten(self) -> List[LLMResult]:
+        """Flatten generations into a single list."""
+        llm_results = []
+        for i, gen_list in enumerate(self.generations):
+            # Avoid double counting tokens in OpenAICallback
+            if i == 0:
+                llm_results.append(
+                    LLMResult(
+                        generations=[gen_list],
+                        llm_output=self.llm_output,
+                    )
+                )
+            else:
+                if self.llm_output is not None:
+                    llm_output = self.llm_output.copy()
+                    llm_output["token_usage"] = dict()
+                else:
+                    llm_output = None
+                llm_results.append(
+                    LLMResult(
+                        generations=[gen_list],
+                        llm_output=llm_output,
+                    )
+                )
+        return llm_results
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, LLMResult):
@@ -324,29 +370,150 @@ class Document(Serializable):
 
 
 class BaseRetriever(ABC):
-    """Base interface for retrievers."""
+    """Base interface for a retriever."""
+
+    _new_arg_supported: bool = False
+    _expects_other_args: bool = False
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        # Version upgrade for old retrievers that implemented the public
+        # methods directly.
+        if cls.get_relevant_documents != BaseRetriever.get_relevant_documents:
+            warnings.warn(
+                "Retrievers must implement abstract `_get_relevant_documents` method"
+                " instead of `get_relevant_documents`",
+                DeprecationWarning,
+            )
+            swap = cls.get_relevant_documents
+            cls.get_relevant_documents = (  # type: ignore[assignment]
+                BaseRetriever.get_relevant_documents
+            )
+            cls._get_relevant_documents = swap  # type: ignore[assignment]
+        if (
+            hasattr(cls, "aget_relevant_documents")
+            and cls.aget_relevant_documents != BaseRetriever.aget_relevant_documents
+        ):
+            warnings.warn(
+                "Retrievers must implement abstract `_aget_relevant_documents` method"
+                " instead of `aget_relevant_documents`",
+                DeprecationWarning,
+            )
+            aswap = cls.aget_relevant_documents
+            cls.aget_relevant_documents = (  # type: ignore[assignment]
+                BaseRetriever.aget_relevant_documents
+            )
+            cls._aget_relevant_documents = aswap  # type: ignore[assignment]
+        parameters = signature(cls._get_relevant_documents).parameters
+        cls._new_arg_supported = parameters.get("run_manager") is not None
+        # If a V1 retriever broke the interface and expects additional arguments
+        cls._expects_other_args = (not cls._new_arg_supported) and len(parameters) > 2
 
     @abstractmethod
-    def get_relevant_documents(self, query: str) -> List[Document]:
-        """Get documents relevant for a query.
-
+    def _get_relevant_documents(
+        self, query: str, *, run_manager: CallbackManagerForRetrieverRun, **kwargs: Any
+    ) -> List[Document]:
+        """Get documents relevant to a query.
         Args:
             query: string to find relevant documents for
-
+            run_manager: The callbacks handler to use
         Returns:
             List of relevant documents
         """
 
     @abstractmethod
-    async def aget_relevant_documents(self, query: str) -> List[Document]:
-        """Get documents relevant for a query.
-
+    async def _aget_relevant_documents(
+        self,
+        query: str,
+        *,
+        run_manager: AsyncCallbackManagerForRetrieverRun,
+        **kwargs: Any,
+    ) -> List[Document]:
+        """Asynchronously get documents relevant to a query.
         Args:
             query: string to find relevant documents for
-
+            run_manager: The callbacks handler to use
         Returns:
             List of relevant documents
         """
+
+    def get_relevant_documents(
+        self, query: str, *, callbacks: Callbacks = None, **kwargs: Any
+    ) -> List[Document]:
+        """Retrieve documents relevant to a query.
+        Args:
+            query: string to find relevant documents for
+            callbacks: Callback manager or list of callbacks
+        Returns:
+            List of relevant documents
+        """
+        from langchain.callbacks.manager import CallbackManager
+
+        callback_manager = CallbackManager.configure(
+            callbacks, None, verbose=kwargs.get("verbose", False)
+        )
+        run_manager = callback_manager.on_retriever_start(
+            query,
+            **kwargs,
+        )
+        try:
+            if self._new_arg_supported:
+                result = self._get_relevant_documents(
+                    query, run_manager=run_manager, **kwargs
+                )
+            elif self._expects_other_args:
+                result = self._get_relevant_documents(query, **kwargs)
+            else:
+                result = self._get_relevant_documents(query)  # type: ignore[call-arg]
+        except Exception as e:
+            run_manager.on_retriever_error(e)
+            raise e
+        else:
+            run_manager.on_retriever_end(
+                result,
+                **kwargs,
+            )
+            return result
+
+    async def aget_relevant_documents(
+        self, query: str, *, callbacks: Callbacks = None, **kwargs: Any
+    ) -> List[Document]:
+        """Asynchronously get documents relevant to a query.
+        Args:
+            query: string to find relevant documents for
+            callbacks: Callback manager or list of callbacks
+        Returns:
+            List of relevant documents
+        """
+        from langchain.callbacks.manager import AsyncCallbackManager
+
+        callback_manager = AsyncCallbackManager.configure(
+            callbacks, None, verbose=kwargs.get("verbose", False)
+        )
+        run_manager = await callback_manager.on_retriever_start(
+            query,
+            **kwargs,
+        )
+        try:
+            if self._new_arg_supported:
+                result = await self._aget_relevant_documents(
+                    query, run_manager=run_manager, **kwargs
+                )
+            elif self._expects_other_args:
+                result = await self._aget_relevant_documents(query, **kwargs)
+            else:
+                result = await self._aget_relevant_documents(
+                    query,  # type: ignore[call-arg]
+                )
+        except Exception as e:
+            await run_manager.on_retriever_error(e)
+            raise e
+        else:
+            await run_manager.on_retriever_end(
+                result,
+                **kwargs,
+            )
+            return result
 
 
 # For backwards compatibility

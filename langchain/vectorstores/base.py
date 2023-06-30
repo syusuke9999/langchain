@@ -1,4 +1,5 @@
 """Interface for vector stores."""
+
 from __future__ import annotations
 
 import asyncio
@@ -20,12 +21,13 @@ from typing import (
 
 from pydantic import BaseModel, Field, root_validator
 
+from langchain.callbacks.manager import (
+    AsyncCallbackManagerForRetrieverRun,
+    CallbackManagerForRetrieverRun,
+)
 from langchain.docstore.document import Document
 from langchain.embeddings.base import Embeddings
 from langchain.schema import BaseRetriever
-import datetime
-import time
-
 
 VST = TypeVar("VST", bound="VectorStore")
 
@@ -50,6 +52,21 @@ class VectorStore(ABC):
         Returns:
             List of ids from adding the texts into the vectorstore.
         """
+
+    def delete(self, ids: List[str]) -> Optional[bool]:
+        """Delete by vector ID.
+
+        Args:
+            ids: List of ids to delete.
+
+        Returns:
+            Optional[bool]: True if deletion is successful,
+            False otherwise, None if not implemented.
+        """
+
+        raise NotImplementedError(
+            "delete_by_id method must be implemented by subclass."
+        )
 
     async def aadd_texts(
         self,
@@ -162,8 +179,8 @@ class VectorStore(ABC):
             ]
             if len(docs_and_similarities) == 0:
                 warnings.warn(
-                    f"No relevant docs were retrieved using the relevance score\
-                          threshold {score_threshold}"
+                    "No relevant docs were retrieved using the relevance score"
+                    f" threshold {score_threshold}"
                 )
         return docs_and_similarities
 
@@ -312,21 +329,11 @@ class VectorStore(ABC):
         cls: Type[VST],
         documents: List[Document],
         embedding: Embeddings,
-        batch_size: int = 100,  # Adjust as needed
-        delay: float = 64.0,  # Adjust as needed
         **kwargs: Any,
     ) -> VST:
         """Return VectorStore initialized from documents and embeddings."""
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
-        text_batches = [
-            texts[i : i + batch_size] for i in range(0, len(texts), batch_size)
-        ]
-        # Process each batch asynchronously
-        for i, text_batch in enumerate(text_batches):
-            cls.from_texts(text_batch, embedding, metadatas=metadatas[i * batch_size: (i + 1) * batch_size],
-                                  **kwargs)
-            time.sleep(delay)  # Add delay between batches
         return cls.from_texts(texts, embedding, metadatas=metadatas, **kwargs)
 
     @classmethod
@@ -334,21 +341,11 @@ class VectorStore(ABC):
         cls: Type[VST],
         documents: List[Document],
         embedding: Embeddings,
-        batch_size: int = 100,  # Adjust as needed
-        delay: float = 64.0,  # Adjust as needed
         **kwargs: Any,
     ) -> VST:
         """Return VectorStore initialized from documents and embeddings."""
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
-        # Split texts into batches
-        text_batches = [
-            texts[i : i + batch_size] for i in range(0, len(texts), batch_size)
-        ]
-        # Process each batch asynchronously
-        for i, text_batch in enumerate(text_batches):
-            await cls.afrom_texts(text_batch, embedding, metadatas=metadatas[i * batch_size : (i + 1) * batch_size], **kwargs)
-            await asyncio.sleep(delay)  # Add delay between batches
         return await cls.afrom_texts(texts, embedding, metadatas=metadatas, **kwargs)
 
     @classmethod
@@ -410,7 +407,13 @@ class VectorStoreRetriever(BaseRetriever, BaseModel):
                 )
         return values
 
-    def get_relevant_documents(self, query: str) -> List[Document]:
+    def _get_relevant_documents(
+        self,
+        query: str,
+        *,
+        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
+        **kwargs: Any,
+    ) -> List[Document]:
         if self.search_type == "similarity":
             docs = self.vectorstore.similarity_search(query, **self.search_kwargs)
         elif self.search_type == "similarity_score_threshold":
@@ -428,7 +431,13 @@ class VectorStoreRetriever(BaseRetriever, BaseModel):
             raise ValueError(f"search_type of {self.search_type} not allowed.")
         return docs
 
-    async def aget_relevant_documents(self, query: str) -> List[Document]:
+    async def _aget_relevant_documents(
+        self,
+        query: str,
+        *,
+        run_manager: Optional[AsyncCallbackManagerForRetrieverRun] = None,
+        **kwargs: Any,
+    ) -> List[Document]:
         if self.search_type == "similarity":
             docs = await self.vectorstore.asimilarity_search(
                 query, **self.search_kwargs

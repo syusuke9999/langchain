@@ -630,3 +630,17 @@ class FAISS(VectorStore):
             **kwargs,
         )
         return [(doc, self.relevance_score_fn(score)) for doc, score in docs_and_scores]
+
+    @classmethod
+    async def afrom_texts(cls, texts, embedding, metadatas=None, **kwargs):
+        # Compute embeddings for the texts
+        embeddings = await embedding.embed(texts)
+
+        # Initialize a new FAISS index
+        index = cls(**kwargs)
+
+        # Add the embeddings to the index
+        for i, emb in enumerate(embeddings):
+            index.add(emb, metadata=metadatas[i] if metadatas else None)
+
+        return index

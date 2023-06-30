@@ -634,7 +634,7 @@ class FAISS(VectorStore):
     @classmethod
     async def afrom_texts(cls, texts, embedding, metadatas=None, **kwargs):
         # Compute embeddings for the texts
-        embedding = await embedding.aembed_query(texts)
+        embedding = [await embedding.aembed_query(text) for text in texts]
 
         # Initialize a new FAISS index
         index = cls(**kwargs)

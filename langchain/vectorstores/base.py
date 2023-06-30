@@ -325,7 +325,7 @@ class VectorStore(ABC):
             documents: List[Document],
             embedding: Embeddings,
             batch_size: int = 100,  # Adjust as needed
-            delay: float = 1.0,  # Adjust as needed
+            delay: float = 3.0,  # Adjust as needed
             **kwargs: Any,
     ) -> VST:
         """Return VectorStore initialized from documents and embeddings."""

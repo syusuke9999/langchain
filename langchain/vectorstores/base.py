@@ -321,26 +321,52 @@ class VectorStore(ABC):
 
     @classmethod
     def from_documents(
-        cls: Type[VST],
-        documents: List[Document],
-        embedding: Embeddings,
-        **kwargs: Any,
+            cls: Type[VST],
+            documents: List[Document],
+            embedding: Embeddings,
+            batch_size: int = 100,  # Adjust as needed
+            delay: float = 1.0,  # Adjust as needed
+            **kwargs: Any,
     ) -> VST:
         """Return VectorStore initialized from documents and embeddings."""
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
+
+        # Split texts into batches
+        text_batches = [
+            texts[i: i + batch_size] for i in range(0, len(texts), batch_size)
+        ]
+
+        # Process each batch asynchronously
+        for i, text_batch in enumerate(text_batches):
+            await cls.afrom_texts(text_batch, embedding, metadatas=metadatas[i * batch_size: (i + 1) * batch_size],
+                                  **kwargs)
+            await asyncio.sleep(delay)  # Add delay between batches
         return cls.from_texts(texts, embedding, metadatas=metadatas, **kwargs)
 
     @classmethod
     async def afrom_documents(
-        cls: Type[VST],
-        documents: List[Document],
-        embedding: Embeddings,
-        **kwargs: Any,
+            cls: Type[VST],
+            documents: List[Document],
+            embedding: Embeddings,
+            batch_size: int = 100,  # Adjust as needed
+            delay: float = 1.0,  # Adjust as needed
+            **kwargs: Any,
     ) -> VST:
         """Return VectorStore initialized from documents and embeddings."""
         texts = [d.page_content for d in documents]
         metadatas = [d.metadata for d in documents]
+
+        # Split texts into batches
+        text_batches = [
+            texts[i: i + batch_size] for i in range(0, len(texts), batch_size)
+        ]
+
+        # Process each batch asynchronously
+        for i, text_batch in enumerate(text_batches):
+            await cls.afrom_texts(text_batch, embedding, metadatas=metadatas[i * batch_size: (i + 1) * batch_size],
+                                  **kwargs)
+            await asyncio.sleep(delay)  # Add delay between batches
         return await cls.afrom_texts(texts, embedding, metadatas=metadatas, **kwargs)
 
     @classmethod

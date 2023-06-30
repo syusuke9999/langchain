@@ -35,14 +35,14 @@ logger = logging.getLogger(__name__)
 def _create_retry_decorator(embeddings: OpenAIEmbeddings) -> Callable[[Any], Any]:
     import openai
 
-    min_seconds = 120
-    max_seconds = 180
+    min_seconds = 4
+    max_seconds = 10
     # Wait 2^x * 1 second between each retry starting with
     # 4 seconds, then up to 10 seconds, then 10 seconds afterwards
     return retry(
         reraise=True,
         stop=stop_after_attempt(embeddings.max_retries),
-        wait=wait_exponential(multiplier=2, min=min_seconds, max=max_seconds),
+        wait=wait_exponential(multiplier=1, min=min_seconds, max=max_seconds),
         retry=(
             retry_if_exception_type(openai.error.Timeout)
             | retry_if_exception_type(openai.error.APIError)
@@ -57,14 +57,14 @@ def _create_retry_decorator(embeddings: OpenAIEmbeddings) -> Callable[[Any], Any
 def _async_retry_decorator(embeddings: OpenAIEmbeddings) -> Any:
     import openai
 
-    min_seconds = 120
-    max_seconds = 180
+    min_seconds = 4
+    max_seconds = 10
     # Wait 2^x * 1 second between each retry starting with
     # 4 seconds, then up to 10 seconds, then 10 seconds afterwards
     async_retrying = AsyncRetrying(
         reraise=True,
         stop=stop_after_attempt(embeddings.max_retries),
-        wait=wait_exponential(multiplier=2, min=min_seconds, max=max_seconds),
+        wait=wait_exponential(multiplier=1, min=min_seconds, max=max_seconds),
         retry=(
             retry_if_exception_type(openai.error.Timeout)
             | retry_if_exception_type(openai.error.APIError)
@@ -108,42 +108,43 @@ async def async_embed_with_retry(embeddings: OpenAIEmbeddings, **kwargs: Any) ->
 
 
 class OpenAIEmbeddings(BaseModel, Embeddings):
-    """OpenAI埋め込みモデルのラッパー。
+    """Wrapper around OpenAI embedding models.
 
-        使用するには、``openai`` pythonパッケージがインストールされていること、および
-        環境変数``OPENAI_API_KEY``があなたのAPIキーで設定されているか、それを
-        コンストラクタに名前付きパラメータとして渡す必要があります。
+    To use, you should have the ``openai`` python package installed, and the
+    environment variable ``OPENAI_API_KEY`` set with your API key or pass it
+    as a named parameter to the constructor.
 
-        例：
-            .. code-block:: python
+    Example:
+        .. code-block:: python
 
-                from langchain.embeddings import OpenAIEmbeddings
-                openai = OpenAIEmbeddings(openai_api_key="my-api-key")
+            from langchain.embeddings import OpenAIEmbeddings
+            openai = OpenAIEmbeddings(openai_api_key="my-api-key")
 
-        Microsoft Azureエンドポイントでライブラリを使用するには、OPENAI_API_TYPE、OPENAI_API_BASE、OPENAI_API_KEY、
-        およびOPENAI_API_VERSIONを設定する必要があります。
-        OPENAI_API_TYPEは'azure'に設定し、他のものはエンドポイントのプロパティに対応します。
-        さらに、デプロイメント名はモデルパラメータとして渡す必要があります。
+    In order to use the library with Microsoft Azure endpoints, you need to set
+    the OPENAI_API_TYPE, OPENAI_API_BASE, OPENAI_API_KEY and OPENAI_API_VERSION.
+    The OPENAI_API_TYPE must be set to 'azure' and the others correspond to
+    the properties of your endpoint.
+    In addition, the deployment name must be passed as the model parameter.
 
-        例：
-            .. code-block:: python
+    Example:
+        .. code-block:: python
 
-                import os
-                os.environ["OPENAI_API_TYPE"] = "azure"
-                os.environ["OPENAI_API_BASE"] = "https://<your-endpoint.openai.azure.com/"
-                os.environ["OPENAI_API_KEY"] = "your AzureOpenAI key"
-                os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
-                os.environ["OPENAI_PROXY"] = "http://your-corporate-proxy:8080"
+            import os
+            os.environ["OPENAI_API_TYPE"] = "azure"
+            os.environ["OPENAI_API_BASE"] = "https://<your-endpoint.openai.azure.com/"
+            os.environ["OPENAI_API_KEY"] = "your AzureOpenAI key"
+            os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
+            os.environ["OPENAI_PROXY"] = "http://your-corporate-proxy:8080"
 
-                from langchain.embeddings.openai import OpenAIEmbeddings
-                embeddings = OpenAIEmbeddings(
-                    deployment="your-embeddings-deployment-name",
-                    model="your-embeddings-model-name",
-                    openai_api_base="https://your-endpoint.openai.azure.com/",
-                    openai_api_type="azure",
-                )
-                text = "これはテストクエリです。"
-                query_result = embeddings.embed_query(text)
+            from langchain.embeddings.openai import OpenAIEmbeddings
+            embeddings = OpenAIEmbeddings(
+                deployment="your-embeddings-deployment-name",
+                model="your-embeddings-model-name",
+                openai_api_base="https://your-endpoint.openai.azure.com/",
+                openai_api_type="azure",
+            )
+            text = "This is a test query."
+            query_result = embeddings.embed_query(text)
 
     """
 
@@ -164,11 +165,21 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
     disallowed_special: Union[Literal["all"], Set[str], Sequence[str]] = "all"
     chunk_size: int = 1000
     """Maximum number of texts to embed in each batch"""
-    max_retries: int = 20
+    max_retries: int = 6
     """Maximum number of retries to make when generating."""
     request_timeout: Optional[Union[float, Tuple[float, float]]] = None
     """Timeout in seconds for the OpenAPI request."""
     headers: Any = None
+    tiktoken_model_name: Optional[str] = None
+    """The model name to pass to tiktoken when using this class. 
+    Tiktoken is used to count the number of tokens in documents to constrain 
+    them to be under a certain limit. By default, when set to None, this will 
+    be the same as the embedding model name. However, there are some cases 
+    where you may want to use this Embedding class with a model name not 
+    supported by tiktoken. This can include when using Azure embeddings or 
+    when using one of the many model providers that expose an OpenAI-like 
+    API but with different models. In those cases, in order to avoid erroring 
+    when tiktoken is called, you can specify a model name to use here."""
 
     class Config:
         """Configuration for this pydantic object."""
@@ -264,7 +275,13 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
 
         tokens = []
         indices = []
-        encoding = tiktoken.model.encoding_for_model(self.model)
+        model_name = self.tiktoken_model_name or self.model
+        try:
+            encoding = tiktoken.encoding_for_model(model_name)
+        except KeyError:
+            logger.warning("Warning: model not found. Using cl100k_base encoding.")
+            model = "cl100k_base"
+            encoding = tiktoken.get_encoding(model)
         for i, text in enumerate(texts):
             if self.model.endswith("001"):
                 # See: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
@@ -328,7 +345,13 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
 
         tokens = []
         indices = []
-        encoding = tiktoken.model.encoding_for_model(self.model)
+        model_name = self.tiktoken_model_name or self.model
+        try:
+            encoding = tiktoken.encoding_for_model(model_name)
+        except KeyError:
+            logger.warning("Warning: model not found. Using cl100k_base encoding.")
+            model = "cl100k_base"
+            encoding = tiktoken.get_encoding(model)
         for i, text in enumerate(texts):
             if self.model.endswith("001"):
                 # See: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500

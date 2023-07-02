@@ -155,3 +155,4 @@ Japanize-glossary.patch
 .python-version
 remove-api-key.txt
 secret-patterns.txt
+!/.run/langchain-ja.run.xml

@@ -531,8 +531,8 @@ class FAISS(VectorStore):
             embedding: Embeddings,
             metadatas: Optional[List[dict]] = None,
             ids: Optional[List[str]] = None,
-            batch_size: int = 100,
-            wait_time: int = 60,
+            batch_size: int = 10,
+            wait_time: int = 20,
             **kwargs: Any,
     ) -> 'FAISS':
         """生のドキュメントからFAISSラッパーを構築します。

@@ -7,6 +7,7 @@ import pickle
 import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+import time
 
 import numpy as np
 
@@ -524,23 +525,25 @@ class FAISS(VectorStore):
 
     @classmethod
     def from_texts(
-        cls,
-        texts: List[str],
-        embedding: Embeddings,
-        metadatas: Optional[List[dict]] = None,
-        ids: Optional[List[str]] = None,
-        **kwargs: Any,
-    ) -> FAISS:
-        """Construct FAISS wrapper from raw documents.
+            cls,
+            texts: List[str],
+            embedding: Embeddings,
+            metadatas: Optional[List[dict]] = None,
+            ids: Optional[List[str]] = None,
+            batch_size: int = 100,
+            wait_time: int = 60,
+            **kwargs: Any,
+    ) -> 'FAISS':
+        """生のドキュメントからFAISSラッパーを構築します。
 
-        This is a user friendly interface that:
-            1. Embeds documents.
-            2. Creates an in memory docstore
-            3. Initializes the FAISS database
+        これはユーザーフレンドリーなインターフェースで、次の操作を行います:
+            1. ドキュメントを埋め込みます。
+            2. メモリ内のdocstoreを作成します。
+            3. FAISSデータベースを初期化します。
 
-        This is intended to be a quick way to get started.
+        これは、すぐに始めるための方法を提供することを目的としています。
 
-        Example:
+        例:
             .. code-block:: python
 
                 from langchain import FAISS
@@ -548,14 +551,30 @@ class FAISS(VectorStore):
                 embeddings = OpenAIEmbeddings()
                 faiss = FAISS.from_texts(texts, embeddings)
         """
-        embeddings = embedding.embed_documents(texts)
+        all_embeddings = []
+
+        # バッチごとにテキストデータをFAISSインデックスに追加します。
+        for i in range(0, len(texts), batch_size):
+            # バッチを作成します。
+            batch_texts = texts[i:i + batch_size]
+
+            # バッチのテキストデータを埋め込みに変換します。
+            batch_embeddings = embedding.embed_documents(batch_texts)
+
+            # 埋め込みを全体のリストに追加します。
+            all_embeddings.extend(batch_embeddings)
+
+            # 次のバッチの処理まで待ちます。
+            time.sleep(wait_time)
+
+        # 全てのテキストデータの埋め込みからFAISSインデックスを作成します。
         return cls.__from(
             texts,
-            embeddings,
+            all_embeddings,
             embedding,
             metadatas=metadatas,
             ids=ids,
-            **kwargs,
+            **kwargs
         )
 
     @classmethod

@@ -1,4 +1,4 @@
-"""OpenAIの埋め込みモデルをラップしたクラスです"""
+"""Wrapper around OpenAI embedding models."""
 from __future__ import annotations
 
 import logging
@@ -36,19 +36,19 @@ def _create_retry_decorator(embeddings: OpenAIEmbeddings) -> Callable[[Any], Any
     import openai
 
     min_seconds = 4
-    max_seconds = 10
-    # 各リトライの間に2^x * 1秒待機します。
-    # 最初は4秒、次に最大10秒、その後は10秒間隔で待機します。
+    max_seconds = 60
+    # Wait 2^x * 2 second between each retry starting with
+    # 4 seconds, then up to 10 seconds, then 10 seconds afterwards
     return retry(
         reraise=True,
         stop=stop_after_attempt(embeddings.max_retries),
-        wait=wait_exponential(multiplier=1, min=min_seconds, max=max_seconds),
+        wait=wait_exponential(multiplier=2, min=min_seconds, max=max_seconds),
         retry=(
-                retry_if_exception_type(openai.error.Timeout)
-                | retry_if_exception_type(openai.error.APIError)
-                | retry_if_exception_type(openai.error.APIConnectionError)
-                | retry_if_exception_type(openai.error.RateLimitError)
-                | retry_if_exception_type(openai.error.ServiceUnavailableError)
+            retry_if_exception_type(openai.error.Timeout)
+            | retry_if_exception_type(openai.error.APIError)
+            | retry_if_exception_type(openai.error.APIConnectionError)
+            | retry_if_exception_type(openai.error.RateLimitError)
+            | retry_if_exception_type(openai.error.ServiceUnavailableError)
         ),
         before_sleep=before_sleep_log(logger, logging.WARNING),
     )
@@ -58,19 +58,19 @@ def _async_retry_decorator(embeddings: OpenAIEmbeddings) -> Any:
     import openai
 
     min_seconds = 4
-    max_seconds = 10
-    # 各リトライの間に2^x * 1秒待機します。
-    # 最初は4秒、次に最大10秒、その後は10秒間隔で待機します。
+    max_seconds = 60
+    # Wait 2^x * 2 second between each retry starting with
+    # 4 seconds, then up to 10 seconds, then 10 seconds afterwards
     async_retrying = AsyncRetrying(
         reraise=True,
         stop=stop_after_attempt(embeddings.max_retries),
-        wait=wait_exponential(multiplier=1, min=min_seconds, max=max_seconds),
+        wait=wait_exponential(multiplier=2, min=min_seconds, max=max_seconds),
         retry=(
-                retry_if_exception_type(openai.error.Timeout)
-                | retry_if_exception_type(openai.error.APIError)
-                | retry_if_exception_type(openai.error.APIConnectionError)
-                | retry_if_exception_type(openai.error.RateLimitError)
-                | retry_if_exception_type(openai.error.ServiceUnavailableError)
+            retry_if_exception_type(openai.error.Timeout)
+            | retry_if_exception_type(openai.error.APIError)
+            | retry_if_exception_type(openai.error.APIConnectionError)
+            | retry_if_exception_type(openai.error.RateLimitError)
+            | retry_if_exception_type(openai.error.ServiceUnavailableError)
         ),
         before_sleep=before_sleep_log(logger, logging.WARNING),
     )
@@ -87,7 +87,7 @@ def _async_retry_decorator(embeddings: OpenAIEmbeddings) -> Any:
 
 
 def embed_with_retry(embeddings: OpenAIEmbeddings, **kwargs: Any) -> Any:
-    """embeddingの呼び出しを再試行するためにtenacityを使用します"""
+    """Use tenacity to retry the embedding call."""
     retry_decorator = _create_retry_decorator(embeddings)
 
     @retry_decorator
@@ -98,7 +98,7 @@ def embed_with_retry(embeddings: OpenAIEmbeddings, **kwargs: Any) -> Any:
 
 
 async def async_embed_with_retry(embeddings: OpenAIEmbeddings, **kwargs: Any) -> Any:
-    """embeddingの呼び出しを再試行するためにtenacityを使用します"""
+    """Use tenacity to retry the embedding call."""
 
     @_async_retry_decorator(embeddings)
     async def _async_embed_with_retry(**kwargs: Any) -> Any:
@@ -108,41 +108,43 @@ async def async_embed_with_retry(embeddings: OpenAIEmbeddings, **kwargs: Any) ->
 
 
 class OpenAIEmbeddings(BaseModel, Embeddings):
-    """OpenAI埋め込みモデルのラッパークラスです。
+    """Wrapper around OpenAI embedding models.
 
-        使用するには、``openai``パッケージがインストールされている必要があります。
-        環境変数``OPENAI_API_KEY``にAPIキーを設定するか、コンストラクタに名前付きパラメータとして渡してください。
+    To use, you should have the ``openai`` python package installed, and the
+    environment variable ``OPENAI_API_KEY`` set with your API key or pass it
+    as a named parameter to the constructor.
 
-        例:
-            .. code-block:: python
+    Example:
+        .. code-block:: python
 
-                from langchain.embeddings import OpenAIEmbeddings
-                openai = OpenAIEmbeddings(openai_api_key="my-api-key")
+            from langchain.embeddings import OpenAIEmbeddings
+            openai = OpenAIEmbeddings(openai_api_key="my-api-key")
 
-        Microsoft Azureエンドポイントでライブラリを使用するためには、
-        OPENAI_API_TYPE、OPENAI_API_BASE、OPENAI_API_KEY、OPENAI_API_VERSIONを設定する必要があります。
-        OPENAI_API_TYPEは'azure'に設定し、他のパラメータはエンドポイントのプロパティに対応します。
-        さらに、モデルパラメータとしてデプロイメント名を渡す必要があります。
+    In order to use the library with Microsoft Azure endpoints, you need to set
+    the OPENAI_API_TYPE, OPENAI_API_BASE, OPENAI_API_KEY and OPENAI_API_VERSION.
+    The OPENAI_API_TYPE must be set to 'azure' and the others correspond to
+    the properties of your endpoint.
+    In addition, the deployment name must be passed as the model parameter.
 
-        例:
-            .. code-block:: python
+    Example:
+        .. code-block:: python
 
-                import os
-                os.environ["OPENAI_API_TYPE"] = "azure"
-                os.environ["OPENAI_API_BASE"] = "https://<your-endpoint.openai.azure.com/"
-                os.environ["OPENAI_API_KEY"] = "your AzureOpenAI key"
-                os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
-                os.environ["OPENAI_PROXY"] = "http://your-corporate-proxy:8080"
+            import os
+            os.environ["OPENAI_API_TYPE"] = "azure"
+            os.environ["OPENAI_API_BASE"] = "https://<your-endpoint.openai.azure.com/"
+            os.environ["OPENAI_API_KEY"] = "your AzureOpenAI key"
+            os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
+            os.environ["OPENAI_PROXY"] = "http://your-corporate-proxy:8080"
 
-                from langchain.embeddings.openai import OpenAIEmbeddings
-                embeddings = OpenAIEmbeddings(
-                    deployment="your-embeddings-deployment-name",
-                    model="your-embeddings-model-name",
-                    openai_api_base="https://your-endpoint.openai.azure.com/",
-                    openai_api_type="azure",
-                )
-                text = "This is a test query."
-                query_result = embeddings.embed_query(text)
+            from langchain.embeddings.openai import OpenAIEmbeddings
+            embeddings = OpenAIEmbeddings(
+                deployment="your-embeddings-deployment-name",
+                model="your-embeddings-model-name",
+                openai_api_base="https://your-endpoint.openai.azure.com/",
+                openai_api_type="azure",
+            )
+            text = "This is a test query."
+            query_result = embeddings.embed_query(text)
 
     """
 
@@ -421,8 +423,8 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
             return (await self._aget_len_safe_embeddings([text], engine=engine))[0]
         else:
             if self.model.endswith("001"):
-                # 参照: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
-                # パフォーマンスに悪影響を与える可能性のある改行を置換します。
+                # See: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
+                # replace newlines, which can negatively affect performance.
                 text = text.replace("\n", " ")
             return (
                 await async_embed_with_retry(

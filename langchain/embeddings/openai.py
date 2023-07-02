@@ -161,29 +161,32 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
     openai_organization: Optional[str] = None
     allowed_special: Union[Literal["all"], Set[str]] = set()
     disallowed_special: Union[Literal["all"], Set[str], Sequence[str]] = "all"
-    chunk_size: int = 1500
-    """各バッチで埋め込むテキストの最大数"""
-    max_retries: int = 20
-    """生成時に行う最大リトライ回数"""
+    chunk_size: int = 1000
+    """Maximum number of texts to embed in each batch"""
+    max_retries: int = 6
+    """Maximum number of retries to make when generating."""
     request_timeout: Optional[Union[float, Tuple[float, float]]] = None
-    """OpenAPIリクエストのタイムアウト（秒）"""
+    """Timeout in seconds for the OpenAPI request."""
     headers: Any = None
     tiktoken_model_name: Optional[str] = None
-    """このクラスを使用する際にtiktokenに渡すモデル名。
-        Tiktokenは、ドキュメントのトークン数を数えて特定の制限以下に抑えるために使用されます。
-        デフォルトでNoneに設定されている場合、これは埋め込みモデルの名前と同じになります。
-        しかし、tiktokenがサポートしていないモデル名でこのEmbeddingクラスを使用したい場合があります。
-        これには、Azureの埋め込みを使用する場合や、OpenAIのようなAPIを公開しているがモデルが異なる多くのモデルプロバイダを使用する場合が含まれます。
-        これらのケースでは、tiktokenが呼び出されたときにエラーを避けるために、ここで使用するモデル名を指定できます。"""
+    """The model name to pass to tiktoken when using this class. 
+    Tiktoken is used to count the number of tokens in documents to constrain 
+    them to be under a certain limit. By default, when set to None, this will 
+    be the same as the embedding model name. However, there are some cases 
+    where you may want to use this Embedding class with a model name not 
+    supported by tiktoken. This can include when using Azure embeddings or 
+    when using one of the many model providers that expose an OpenAI-like 
+    API but with different models. In those cases, in order to avoid erroring 
+    when tiktoken is called, you can specify a model name to use here."""
 
     class Config:
-        """このpydanticオブジェクトの設定"""
+        """Configuration for this pydantic object."""
 
         extra = Extra.forbid
 
     @root_validator()
     def validate_environment(cls, values: Dict) -> Dict:
-        """環境内にAPIキーとPythonパッケージが存在することを確認します。"""
+        """Validate that api key and python package exists in environment."""
         values["openai_api_key"] = get_from_dict_or_env(
             values, "openai_api_key", "OPENAI_API_KEY"
         )
@@ -253,10 +256,10 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
             }  # type: ignore[assignment]  # noqa: E501
         return openai_args
 
-    # 詳細は以下を参照してください
+    # please refer to
     # https://github.com/openai/openai-cookbook/blob/main/examples/Embedding_long_inputs.ipynb
     def _get_len_safe_embeddings(
-            self, texts: List[str], *, engine: str, chunk_size: Optional[int] = None
+        self, texts: List[str], *, engine: str, chunk_size: Optional[int] = None
     ) -> List[List[float]]:
         embeddings: List[List[float]] = [[] for _ in range(len(texts))]
         try:
@@ -279,8 +282,8 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
             encoding = tiktoken.get_encoding(model)
         for i, text in enumerate(texts):
             if self.model.endswith("001"):
-                # 参照: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
-                # パフォーマンスに悪影響を与える可能性のある改行を置換します。
+                # See: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
+                # replace newlines, which can negatively affect performance.
                 text = text.replace("\n", " ")
             token = encoding.encode(
                 text,
@@ -288,7 +291,7 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
                 disallowed_special=self.disallowed_special,
             )
             for j in range(0, len(token), self.embedding_ctx_length):
-                tokens += [token[j: j + self.embedding_ctx_length]]
+                tokens += [token[j : j + self.embedding_ctx_length]]
                 indices += [i]
 
         batched_embeddings = []
@@ -296,7 +299,7 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
         for i in range(0, len(tokens), _chunk_size):
             response = embed_with_retry(
                 self,
-                input=tokens[i: i + _chunk_size],
+                input=tokens[i : i + _chunk_size],
                 **self._invocation_params,
             )
             batched_embeddings += [r["embedding"] for r in response["data"]]
@@ -323,10 +326,10 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
 
         return embeddings
 
-    # 以下を参照してください
+    # please refer to
     # https://github.com/openai/openai-cookbook/blob/main/examples/Embedding_long_inputs.ipynb
     async def _aget_len_safe_embeddings(
-            self, texts: List[str], *, engine: str, chunk_size: Optional[int] = None
+        self, texts: List[str], *, engine: str, chunk_size: Optional[int] = None
     ) -> List[List[float]]:
         embeddings: List[List[float]] = [[] for _ in range(len(texts))]
         try:
@@ -349,8 +352,8 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
             encoding = tiktoken.get_encoding(model)
         for i, text in enumerate(texts):
             if self.model.endswith("001"):
-                # 参照: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
-                # パフォーマンスに悪影響を与える可能性のある改行を置換します。
+                # See: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
+                # replace newlines, which can negatively affect performance.
                 text = text.replace("\n", " ")
             token = encoding.encode(
                 text,
@@ -358,7 +361,7 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
                 disallowed_special=self.disallowed_special,
             )
             for j in range(0, len(token), self.embedding_ctx_length):
-                tokens += [token[j: j + self.embedding_ctx_length]]
+                tokens += [token[j : j + self.embedding_ctx_length]]
                 indices += [i]
 
         batched_embeddings = []
@@ -366,7 +369,7 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
         for i in range(0, len(tokens), _chunk_size):
             response = await async_embed_with_retry(
                 self,
-                input=tokens[i: i + _chunk_size],
+                input=tokens[i : i + _chunk_size],
                 **self._invocation_params,
             )
             batched_embeddings += [r["embedding"] for r in response["data"]]
@@ -394,14 +397,14 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
         return embeddings
 
     def _embedding_func(self, text: str, *, engine: str) -> List[float]:
-        """OpenAIの埋め込みエンドポイントに呼び出しを行います。"""
+        """Call out to OpenAI's embedding endpoint."""
         # handle large input text
         if len(text) > self.embedding_ctx_length:
             return self._get_len_safe_embeddings([text], engine=engine)[0]
         else:
             if self.model.endswith("001"):
-                # 参照: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
-                # パフォーマンスに悪影響を与える可能性のある改行を置換します。
+                # See: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
+                # replace newlines, which can negatively affect performance.
                 text = text.replace("\n", " ")
             return embed_with_retry(
                 self,
@@ -412,8 +415,8 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
             ][0]["embedding"]
 
     async def _aembedding_func(self, text: str, *, engine: str) -> List[float]:
-        """OpenAIの埋め込みエンドポイントに呼び出しを行います。"""
-        # 大きな入力テキストを処理する
+        """Call out to OpenAI's embedding endpoint."""
+        # handle large input text
         if len(text) > self.embedding_ctx_length:
             return (await self._aget_len_safe_embeddings([text], engine=engine))[0]
         else:
@@ -430,57 +433,59 @@ class OpenAIEmbeddings(BaseModel, Embeddings):
             )["data"][0]["embedding"]
 
     def embed_documents(
-            self, texts: List[str], chunk_size: Optional[int] = 0
+        self, texts: List[str], chunk_size: Optional[int] = 0
     ) -> List[List[float]]:
-        """埋め込み検索ドキュメントのためにOpenAIの埋め込みエンドポイントに呼び出しを行います。
+        """Call out to OpenAI's embedding endpoint for embedding search docs.
 
-                Args:
-                    texts: 埋め込むテキストのリスト。
-                    chunk_size: 埋め込みのチャンクサイズ。Noneの場合、クラスで指定されたチャンクサイズが使用されます。
+        Args:
+            texts: The list of texts to embed.
+            chunk_size: The chunk size of embeddings. If None, will use the chunk size
+                specified by the class.
 
-                Returns:
-                    テキストごとの埋め込みのリスト。
+        Returns:
+            List of embeddings, one for each text.
         """
-        # 注意: 簡単にするため、リストには最大コンテキストよりも長いテキストが含まれる可能性があると仮定し、
-        # 長さに安全な埋め込み関数を使用します。
+        # NOTE: to keep things simple, we assume the list may contain texts longer
+        #       than the maximum context and use length-safe embedding function.
         return self._get_len_safe_embeddings(texts, engine=self.deployment)
 
     async def aembed_documents(
-            self, texts: List[str], chunk_size: Optional[int] = 0
+        self, texts: List[str], chunk_size: Optional[int] = 0
     ) -> List[List[float]]:
-        """埋め込み検索ドキュメントのためにOpenAIの非同期埋め込みエンドポイントに呼び出しを行います。
+        """Call out to OpenAI's embedding endpoint async for embedding search docs.
 
-                Args:
-                    texts: 埋め込むテキストのリスト。
-                    chunk_size: 埋め込みのチャンクサイズ。Noneの場合、クラスで指定されたチャンクサイズが使用されます。
+        Args:
+            texts: The list of texts to embed.
+            chunk_size: The chunk size of embeddings. If None, will use the chunk size
+                specified by the class.
 
-                Returns:
-                    テキストごとの埋め込みのリスト。
+        Returns:
+            List of embeddings, one for each text.
         """
-        # 注意: 簡単にするため、リストには最大コンテキストよりも長いテキストが含まれる可能性があると仮定し、
-        # 長さに安全な埋め込み関数を使用します。
+        # NOTE: to keep things simple, we assume the list may contain texts longer
+        #       than the maximum context and use length-safe embedding function.
         return await self._aget_len_safe_embeddings(texts, engine=self.deployment)
 
     def embed_query(self, text: str) -> List[float]:
-        """埋め込みクエリテキストのためにOpenAIの埋め込みエンドポイントに呼び出しを行います。
+        """Call out to OpenAI's embedding endpoint for embedding query text.
 
-                Args:
-                    text: 埋め込むテキスト。
+        Args:
+            text: The text to embed.
 
-                Returns:
-                    テキストの埋め込み。
+        Returns:
+            Embedding for the text.
         """
         embedding = self._embedding_func(text, engine=self.deployment)
         return embedding
 
     async def aembed_query(self, text: str) -> List[float]:
-        """埋め込みクエリテキストのためにOpenAIの非同期埋め込みエンドポイントに呼び出しを行います。
+        """Call out to OpenAI's embedding endpoint async for embedding query text.
 
-                Args:
-                    text: 埋め込むテキスト。
+        Args:
+            text: The text to embed.
 
-                Returns:
-                    テキストの埋め込み。
+        Returns:
+            Embedding for the text.
         """
         embedding = await self._aembedding_func(text, engine=self.deployment)
         return embedding

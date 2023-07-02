@@ -8,6 +8,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 import time
+from tqdm import tqdm
 
 import numpy as np
 
@@ -554,7 +555,7 @@ class FAISS(VectorStore):
         all_embeddings = []
 
         # バッチごとにテキストデータをFAISSインデックスに追加します。
-        for i in range(0, len(texts), batch_size):
+        for i in tqdm(range(0, len(texts), batch_size)):
             # バッチを作成します。
             batch_texts = texts[i:i + batch_size]
 

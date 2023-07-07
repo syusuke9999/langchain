@@ -115,29 +115,24 @@ class UnstructuredBaseLoader(BaseLoader, ABC):
 
 
 class UnstructuredFileLoader(UnstructuredBaseLoader):
-    """UnstructuredFileLoader uses unstructured to load files. The file loader uses the
-    unstructured partition function and will automatically detect the file
-    type. You can run the loader in one of two modes: "single" and "elements".
-    If you use "single" mode, the document will be returned as a single
-    langchain Document object. If you use "elements" mode, the unstructured
-    library will split the document into elements such as Title and NarrativeText.
-    You can pass in additional unstructured kwargs after mode to apply
-    different unstructured settings.
+    """UnstructuredFileLoaderは、unstructuredを使用してファイルをロードします。ファイルローダーはunstructuredのパーティション関数を使用し、
+    ファイルタイプを自動的に検出します。ローダーは「single」モードと「elements」モードの2つのモードで実行できます。
+    「single」モードを使用すると、ドキュメントは単一のlangchain Documentオブジェクトとして返されます。
+    「elements」モードを使用すると、unstructuredライブラリはドキュメントをTitleやNarrativeTextなどの要素に分割します。
+    モードの後に追加のunstructured kwargsを渡すことで、異なるunstructured設定を適用できます。
+        例
+        --------
+        ```python
+        from langchain.document_loaders import UnstructuredFileLoader
 
-    Examples
-    --------
-    ```python
-    from langchain.document_loaders import UnstructuredFileLoader
-
-    loader = UnstructuredFileLoader(
-        "example.pdf", mode="elements", strategy="fast",
-    )
-    docs = loader.load()
-    ```
-
-    References
-    ----------
-    https://unstructured-io.github.io/unstructured/bricks.html#partition
+        loader = UnstructuredFileLoader(
+            "example.pdf", mode="elements", strategy="fast",
+        )
+        docs = loader.load()
+        ```
+        参考文献
+        ----------
+        https://unstructured-io.github.io/unstructured/bricks.html#partition
     """
 
     def __init__(
@@ -196,36 +191,28 @@ def get_elements_from_api(
 
 
 class UnstructuredAPIFileLoader(UnstructuredFileLoader):
-    """UnstructuredAPIFileLoader uses the Unstructured API to load files.
-    By default, the loader makes a call to the hosted Unstructured API.
-    If you are running the unstructured API locally, you can change the
-    API rule by passing in the url parameter when you initialize the loader.
-    The hosted Unstructured API requires an API key. See
-    https://www.unstructured.io/api-key/ if you need to generate a key.
-
-    You can run the loader in one of two modes: "single" and "elements".
-    If you use "single" mode, the document will be returned as a single
-    langchain Document object. If you use "elements" mode, the unstructured
-    library will split the document into elements such as Title and NarrativeText.
-    You can pass in additional unstructured kwargs after mode to apply
-    different unstructured settings.
-
-    Examples
-    --------
-    ```python
-    from langchain.document_loaders import UnstructuredAPIFileLoader
-
-    loader = UnstructuredFileAPILoader(
-        "example.pdf", mode="elements", strategy="fast", api_key="MY_API_KEY",
-    )
-    docs = loader.load()
-    ```
-
-    References
-    ----------
-    https://unstructured-io.github.io/unstructured/bricks.html#partition
-    https://www.unstructured.io/api-key/
-    https://github.com/Unstructured-IO/unstructured-api
+    """UnstructuredAPIFileLoaderは、Unstructured APIを使用してファイルをロードします。
+    デフォルトでは、ローダーはホストされたUnstructured APIに対して呼び出しを行います。
+    unstructured APIをローカルで実行している場合は、ローダーを初期化するときにurlパラメータを渡すことでAPIルールを変更できます。
+    ホストされたUnstructured APIはAPIキーを必要とします。キーを生成する必要がある場合は、https://www.unstructured.io/api-key/ を参照してください。
+    ローダーは「single」モードと「elements」モードの2つのモードで実行できます。「single」モードを使用すると、
+    ドキュメントは単一のlangchain Documentオブジェクトとして返されます。「elements」
+    モードを使用すると、unstructuredライブラリはドキュメントをTitleやNarrativeTextなどの要素に分割します。
+    モードの後に追加のunstructured kwargsを渡すことで、異なるunstructured設定を適用できます。
+        例
+        --------
+        ```python
+        from langchain.document_loaders import UnstructuredAPIFileLoader
+        loader = UnstructuredAPIFileLoader(
+            "example.pdf", mode="elements", strategy="fast", api_key="MY_API_KEY",
+        )
+        docs = loader.load()
+        ```
+        参考文献
+        ----------
+        https://unstructured-io.github.io/unstructured/bricks.html#partition
+        https://www.unstructured.io/api-key/
+        https://github.com/Unstructured-IO/unstructured-api
     """
 
     def __init__(
@@ -261,31 +248,28 @@ class UnstructuredAPIFileLoader(UnstructuredFileLoader):
 
 
 class UnstructuredFileIOLoader(UnstructuredBaseLoader):
-    """UnstructuredFileIOLoader uses unstructured to load files. The file loader
-    uses the unstructured partition function and will automatically detect the file
-    type. You can run the loader in one of two modes: "single" and "elements".
-    If you use "single" mode, the document will be returned as a single
-    langchain Document object. If you use "elements" mode, the unstructured
-    library will split the document into elements such as Title and NarrativeText.
-    You can pass in additional unstructured kwargs after mode to apply
-    different unstructured settings.
+    """UnstructuredFileIOLoaderは、unstructuredを使用してファイルをロードします。
+    ファイルローダーはunstructuredのパーティション関数を使用し、ファイルタイプを自動的に検出します。
+    ローダーは「single」モードと「elements」モードの2つのモードで実行できます。
+    「single」モードを使用すると、ドキュメントは単一のlangchain Documentオブジェクトとして返されます。
+    「elements」モードを使用すると、unstructuredライブラリはドキュメントをTitleやNarrativeTextなどの要素に分割します。
+    モードの後に追加のunstructured kwargsを渡すことで、異なるunstructured設定を適用できます。
 
-    Examples
-    --------
-    ```python
-    from langchain.document_loaders import UnstructuredFileIOLoader
+        例
+        --------
+        ```python
+        from langchain.document_loaders import UnstructuredFileIOLoader
 
-    with open("example.pdf", "rb") as f:
-        loader = UnstructuredFileIOLoader(
-            f, mode="elements", strategy="fast",
-        )
-        docs = loader.load()
-    ```
+        with open("example.pdf", "rb") as f:
+            loader = UnstructuredFileIOLoader(
+                f, mode="elements", strategy="fast",
+            )
+            docs = loader.load()
+        ```
 
-
-    References
-    ----------
-    https://unstructured-io.github.io/unstructured/bricks.html#partition
+        参考文献
+        ----------
+        https://unstructured-io.github.io/unstructured/bricks.html#partition
     """
 
     def __init__(
@@ -308,39 +292,31 @@ class UnstructuredFileIOLoader(UnstructuredBaseLoader):
 
 
 class UnstructuredAPIFileIOLoader(UnstructuredFileIOLoader):
-    """UnstructuredAPIFileIOLoader uses the Unstructured API to load files.
-    By default, the loader makes a call to the hosted Unstructured API.
-    If you are running the unstructured API locally, you can change the
-    API rule by passing in the url parameter when you initialize the loader.
-    The hosted Unstructured API requires an API key. See
-    https://www.unstructured.io/api-key/ if you need to generate a key.
+    """UnstructuredAPIFileIOLoaderは、Unstructured APIを使用してファイルをロードします。
+    デフォルトでは、ローダーはホストされたUnstructured APIに対して呼び出しを行います。
+    unstructured APIをローカルで実行している場合は、ローダーを初期化するときにurlパラメータを渡すことでAPIルールを変更できます。
+    ホストされたUnstructured APIはAPIキーを必要とします。キーを生成する必要がある場合は、https://www.unstructured.io/api-key/ を参照してください。
+    ローダーは「single」モードと「elements」モードの2つのモードで実行できます。「single」モードを使用すると、
+    ドキュメントは単一のlangchain Documentオブジェクトとして返されます。
+    「elements」モードを使用すると、unstructuredライブラリはドキュメントをTitleやNarrativeTextなどの要素に分割します。
+    モードの後に追加のunstructured kwargsを渡すことで、異なるunstructured設定を適用できます。
+        例
+        --------
+        ```python
+        from langchain.document_loaders import UnstructuredAPIFileLoader
 
-    You can run the loader in one of two modes: "single" and "elements".
-    If you use "single" mode, the document will be returned as a single
-    langchain Document object. If you use "elements" mode, the unstructured
-    library will split the document into elements such as Title and NarrativeText.
-    You can pass in additional unstructured kwargs after mode to apply
-    different unstructured settings.
-
-    Examples
-    --------
-    ```python
-    from langchain.document_loaders import UnstructuredAPIFileLoader
-
-    with open("example.pdf", "rb") as f:
-        loader = UnstructuredFileAPILoader(
-            f, mode="elements", strategy="fast", api_key="MY_API_KEY",
-        )
-        docs = loader.load()
-    ```
-
-    References
-    ----------
-    https://unstructured-io.github.io/unstructured/bricks.html#partition
-    https://www.unstructured.io/api-key/
-    https://github.com/Unstructured-IO/unstructured-api
+        with open("example.pdf", "rb") as f:
+            loader = UnstructuredAPIFileLoader(
+                f, mode="elements", strategy="fast", api_key="MY_API_KEY",
+            )
+            docs = loader.load()
+        ```
+        参考文献
+        ----------
+        https://unstructured-io.github.io/unstructured/bricks.html#partition
+        https://www.unstructured.io/api-key/
+        https://github.com/Unstructured-IO/unstructured-api
     """
-
     def __init__(
         self,
         file: Union[IO, Sequence[IO]],

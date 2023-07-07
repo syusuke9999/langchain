@@ -150,9 +150,18 @@ wandb/
 
 # integration test artifacts
 data_map*
-\[('_type', 'fake'), ('stop', None)]!/japanize.patch
-Japanize-glossary.patch
-.python-version
-remove-api-key.txt
-secret-patterns.txt
-!/.run/langchain-ja.run.xml
+\[('_type', 'fake'), ('stop', None)]
+
+# Replit files
+*replit*
+
+node_modules
+docs/.yarn/
+docs/node_modules/
+docs/.docusaurus/
+docs/.cache-loader/
+docs/_dist
+docs/api_reference/_build
+docs/docs_skeleton/build
+docs/docs_skeleton/node_modules
+docs/docs_skeleton/yarn.lock

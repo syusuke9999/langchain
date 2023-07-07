@@ -3,8 +3,4 @@
 .git
 .mypy_cache
 .pytest_cache
-Dockerfile!/secret-patterns.txt
-!/remove-api-key.txt
-!/Japanize-glossary.patch
-!/japanize.patch
-!/.python-version
+Dockerfile
